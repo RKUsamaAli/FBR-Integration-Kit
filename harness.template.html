@@ -1,0 +1,881 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FBR Integration Kit — guides + test harness</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --panel:#fff; --ink:#111827; --muted:#6b7280; --line:#e5e7eb;
+    --brand:#0f766e; --brand-dk:#0b3b39; --brand-ink:#fff;
+    --ok:#047857; --ok-bg:#ecfdf5; --bad:#b91c1c; --bad-bg:#fef2f2;
+    --warn:#92400e; --warn-bg:#fffbeb; --warn-line:#fde68a;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.6 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+
+  header.top{background:var(--brand-dk);color:#fff;padding:14px 20px}
+  header.top h1{margin:0;font-size:17px;font-weight:650}
+  header.top p{margin:4px 0 0;font-size:12.5px;color:#a7d5d0}
+
+  nav.main{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--line);
+           padding:8px 20px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  nav.main button{border:1px solid var(--line);background:#fff;padding:7px 14px;border-radius:8px;
+                  cursor:pointer;font:inherit;font-weight:600;color:var(--muted);white-space:nowrap}
+  nav.main button:hover{border-color:#c9cdd3}
+  nav.main button.on{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+  nav.main .sep{width:1px;height:22px;background:var(--line);margin:0 4px}
+  nav.main .stamp{margin-left:auto;font-size:11px;color:var(--muted)}
+
+  .wrap{max-width:1240px;margin:0 auto;padding:16px 20px 80px}
+  .view{display:none}
+  .view.on{display:block}
+
+  /* ---------- documentation ---------- */
+  .doclayout{display:grid;grid-template-columns:236px 1fr;gap:22px;align-items:start}
+  @media(max-width:980px){.doclayout{grid-template-columns:1fr}.toc{display:none}}
+  .toc{position:sticky;top:60px;background:var(--panel);border:1px solid var(--line);border-radius:10px;
+       padding:12px;max-height:calc(100vh - 90px);overflow:auto}
+  .toc h4{margin:0 0 8px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+  .toc a{display:block;padding:4px 6px;border-radius:5px;font-size:12.5px;color:var(--ink);
+         text-decoration:none;line-height:1.35}
+  .toc a:hover{background:#f1f5f4}
+  .toc a.here{background:#e8f2f1;color:var(--brand);font-weight:600}
+
+  article.doc{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:26px 30px;min-width:0}
+  article.doc h1{font-size:23px;margin:0 0 6px;line-height:1.3}
+  article.doc h2{font-size:17px;margin:30px 0 10px;padding-top:14px;border-top:1px solid var(--line);scroll-margin-top:64px}
+  article.doc h2:first-of-type{border-top:0}
+  article.doc h3{font-size:14.5px;margin:20px 0 6px;scroll-margin-top:64px}
+  article.doc h4{font-size:13px;margin:16px 0 4px;color:var(--muted)}
+  article.doc p{margin:9px 0}
+  article.doc ul,article.doc ol{margin:9px 0;padding-left:22px}
+  article.doc li{margin:4px 0}
+  article.doc li.task{list-style:none;margin-left:-18px}
+  article.doc li.task input{margin-right:7px;vertical-align:-1px}
+  article.doc hr{border:0;border-top:1px solid var(--line);margin:22px 0}
+  article.doc blockquote{margin:12px 0;padding:10px 14px;background:var(--warn-bg);
+                         border:1px solid var(--warn-line);border-radius:8px;color:var(--warn);font-size:13px}
+  article.doc a{color:var(--brand)}
+  code{font-family:var(--mono);font-size:.88em;background:#f1f3f5;padding:1px 5px;border-radius:4px;
+       border:1px solid #e6e8ea;word-break:break-word}
+  pre.code{background:#0b1220;color:#d6e2f0;padding:14px 16px;border-radius:9px;overflow:auto;margin:12px 0}
+  pre.code code{background:transparent;border:0;padding:0;color:inherit;font-size:12.5px;line-height:1.55}
+  .tablewrap{overflow-x:auto;margin:12px 0}
+  article.doc table{width:100%;border-collapse:collapse;font-size:13px;min-width:520px}
+  article.doc th,article.doc td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  article.doc th{background:#fafbfc;font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+  article.doc tbody tr:hover{background:#fafbfc}
+
+  /* ---------- testers ---------- */
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:14px}
+  .panel h2{margin:0 0 12px;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+  .grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+  label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:3px}
+  input,select,textarea{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:6px;
+                        font:inherit;background:#fff;color:var(--ink)}
+  textarea{font-family:var(--mono);font-size:12px;min-height:300px;resize:vertical;white-space:pre;overflow:auto}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+  button.act{border:1px solid var(--brand);background:var(--brand);color:#fff;padding:8px 16px;
+             border-radius:7px;cursor:pointer;font:inherit;font-weight:600}
+  button.ghost{border:1px solid var(--line);background:#fff;color:var(--ink);padding:8px 14px;
+               border-radius:7px;cursor:pointer;font:inherit;font-weight:600}
+  button:disabled{opacity:.5;cursor:not-allowed}
+  .note{background:var(--warn-bg);border:1px solid var(--warn-line);color:var(--warn);
+        padding:11px 13px;border-radius:9px;font-size:12.5px;margin-bottom:14px}
+  .note code{background:rgba(0,0,0,.05);border-color:transparent}
+  .split{display:grid;gap:14px;grid-template-columns:1fr 1fr}
+  @media(max-width:980px){.split{grid-template-columns:1fr}}
+  pre.out{font-family:var(--mono);font-size:12px;background:#0b1220;color:#d6e2f0;padding:12px;
+          border-radius:8px;overflow:auto;max-height:520px;white-space:pre-wrap;word-break:break-word;margin:0}
+  .panel table{width:100%;border-collapse:collapse;font-size:12.5px}
+  .panel th,.panel td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+  .panel th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+  .pill{display:inline-block;padding:1px 8px;border-radius:99px;font-size:11px;font-weight:700}
+  .pill.ok{background:var(--ok-bg);color:var(--ok)}
+  .pill.bad{background:var(--bad-bg);color:var(--bad)}
+  .muted{color:var(--muted);font-size:12px;font-weight:400}
+  .hide{display:none}
+  .scroll{max-height:420px;overflow:auto}
+
+  @media print{
+    nav.main,.toc,.note,#connection,#view-di-test,#view-pos-test{display:none!important}
+    body{background:#fff}
+    .doclayout{grid-template-columns:1fr}
+    article.doc{border:0;padding:0}
+    pre.code{background:#f4f6f8;color:#111;border:1px solid var(--line)}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <h1>FBR Integration Kit</h1>
+  <p>Digital Invoicing (DI) &amp; POS Digital Invoicing &mdash; the guides and a live test harness in one offline file.</p>
+</header>
+
+<nav class="main">
+  <button data-view="overview">Overview</button>
+  <button data-view="di-guide">DI Guide</button>
+  <button data-view="pos-guide">POS Guide</button>
+  <button data-view="scenarios">Scenarios</button>
+  <span class="sep"></span>
+  <button data-view="di-test">DI Tester</button>
+  <button data-view="pos-test">POS Tester</button>
+  <span class="stamp">built __BUILT_ON__</span>
+</nav>
+
+<div class="wrap">
+
+  <!-- ======================= OVERVIEW ======================= -->
+  <section id="view-overview" class="view">
+    <div class="doclayout">
+      <aside class="toc"></aside>
+      <article class="doc">
+        __DOC_OVERVIEW__
+        <h2>The relay script (<code>fbr-proxy.js</code>)</h2>
+        <p>The testers in this page need it. Save it next to this file and run <code>node fbr-proxy.js</code>
+           &mdash; or use the buttons below if you only have this HTML file.</p>
+        <p>
+          <button class="ghost" id="copyProxy">Copy the source</button>
+          <button class="ghost" id="dlProxy">Download fbr-proxy.js</button>
+        </p>
+        <pre class="code"><code id="proxySrc">__PROXY_SOURCE__</code></pre>
+      </article>
+    </div>
+  </section>
+
+  <!-- ======================= DI GUIDE ======================= -->
+  <section id="view-di-guide" class="view">
+    <div class="doclayout">
+      <aside class="toc"></aside>
+      <article class="doc">__DOC_DI__</article>
+    </div>
+  </section>
+
+  <!-- ======================= POS GUIDE ====================== -->
+  <section id="view-pos-guide" class="view">
+    <div class="doclayout">
+      <aside class="toc"></aside>
+      <article class="doc">__DOC_POS__</article>
+    </div>
+  </section>
+
+  <!-- ======================= SCENARIOS ====================== -->
+  <section id="view-scenarios" class="view">
+    <div class="doclayout">
+      <aside class="toc"></aside>
+      <article class="doc">__DOC_SCENARIOS__</article>
+    </div>
+  </section>
+
+  <!-- ============ shared by both testers ============ -->
+  <div id="connection" class="hide">
+    <div class="note">
+      <strong>Read first.</strong>
+      (1) A browser cannot call <code>gw.fbr.gov.pk</code> directly &mdash; FBR sends no CORS headers, so the reply is
+      blocked and shows as &ldquo;Failed to fetch&rdquo;. Run <code>node fbr-proxy.js</code> (source on the Overview tab)
+      and leave the Proxy URL below set to <code>http://localhost:8787/proxy</code>.
+      (2) Your token is kept in this browser&rsquo;s localStorage for convenience. Use a <strong>sandbox</strong> token here;
+      production tokens belong in your server&rsquo;s secret store.
+      (3) <strong>DI Post</strong> and <strong>every POS call</strong> write real records. Only DI <em>Validate</em> is a dry run.
+    </div>
+    <div class="panel">
+      <h2>Connection</h2>
+      <div class="grid">
+        <div>
+          <label>Proxy URL <span class="muted">(blank = direct, will hit CORS)</span></label>
+          <input id="proxy" placeholder="http://localhost:8787/proxy" />
+        </div>
+        <div>
+          <label>Request timeout (seconds)</label>
+          <input id="timeout" type="number" min="5" max="180" value="45" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================= DI TESTER ====================== -->
+  <section id="view-di-test" class="view">
+    <div class="panel">
+      <h2>DI &mdash; endpoint &amp; token</h2>
+      <div class="grid">
+        <div>
+          <label>Environment</label>
+          <select id="diEnv">
+            <option value="sb">Sandbox (_sb)</option>
+            <option value="prod">Production (live)</option>
+          </select>
+        </div>
+        <div>
+          <label>Operation</label>
+          <select id="diOp">
+            <option value="validateinvoicedata">Validate only (dry run, writes nothing)</option>
+            <option value="postinvoicedata">Post (creates a real FBR invoice)</option>
+          </select>
+        </div>
+        <div style="grid-column:1/-1">
+          <label>Endpoint URL <span class="muted">(auto-derived; edit if FBR moves the host)</span></label>
+          <input id="diUrl" />
+        </div>
+        <div style="grid-column:1/-1">
+          <label>Bearer token</label>
+          <input id="diToken" type="password" placeholder="paste the DI token issued in IRIS" />
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>DI &mdash; seller identity <span class="muted" style="text-transform:none;letter-spacing:0">(must match the token&rsquo;s owner &mdash; applied to every scenario)</span></h2>
+      <div class="grid">
+        <div><label>sellerNTNCNIC</label><input id="sNtn" placeholder="8885801" /></div>
+        <div><label>sellerBusinessName</label><input id="sName" placeholder="Company 8" /></div>
+        <div><label>sellerProvince</label><input id="sProv" placeholder="Sindh" /></div>
+        <div><label>sellerAddress</label><input id="sAddr" placeholder="Karachi" /></div>
+      </div>
+      <div class="row">
+        <button class="ghost" id="applySeller">Apply seller to the loaded payload</button>
+        <span class="muted">Leave a field blank to keep the scenario&rsquo;s sample value.</span>
+      </div>
+    </div>
+
+    <div class="split">
+      <div class="panel">
+        <h2>Scenario &amp; payload</h2>
+        <div><label>Scenario</label><select id="diScenario"></select></div>
+        <p class="muted" id="diScenarioDesc" style="margin:8px 0 0"></p>
+        <div class="row">
+          <button class="ghost" id="diLoad">Load payload</button>
+          <button class="ghost" id="diFormat">Format JSON</button>
+          <button class="ghost" id="diCurl">Copy as curl</button>
+        </div>
+        <div style="margin-top:10px">
+          <label>Request body (editable)</label>
+          <textarea id="diBody" spellcheck="false"></textarea>
+        </div>
+        <div class="row">
+          <button class="act" id="diRun">Send this scenario</button>
+          <button class="ghost" id="diRunAll">Run ALL scenarios</button>
+          <button class="ghost" id="diExport">Export results (CSV)</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Response</h2>
+        <pre class="out" id="diOut">Nothing sent yet.</pre>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Results</h2>
+      <div class="scroll"><table>
+        <thead><tr><th style="width:70px">Scenario</th><th style="width:70px">Verdict</th><th style="width:150px">FBR invoice #</th><th>Detail</th></tr></thead>
+        <tbody id="diResults"><tr><td colspan="4" class="muted">No runs yet.</td></tr></tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <!-- ====================== POS TESTER ====================== -->
+  <section id="view-pos-test" class="view">
+    <div class="note">
+      <strong>POS has no validate endpoint.</strong> Every call below creates a record. Keep the environment on
+      Sandbox until you are ready to file real receipts.
+    </div>
+
+    <div class="panel">
+      <h2>POS &mdash; endpoint &amp; token</h2>
+      <div class="grid">
+        <div>
+          <label>Environment</label>
+          <select id="posEnv">
+            <option value="sb">Sandbox (esp.fbr.gov.pk:8244)</option>
+            <option value="prod">Production (gw.fbr.gov.pk)</option>
+          </select>
+        </div>
+        <div>
+          <label>bposId <span class="muted">(registered terminal)</span></label>
+          <input id="posBpos" placeholder="05" />
+        </div>
+        <div style="grid-column:1/-1">
+          <label>Endpoint URL</label>
+          <input id="posUrl" />
+        </div>
+        <div style="grid-column:1/-1">
+          <label>Bearer token <span class="muted">(FBR&rsquo;s published sandbox sample: 07eabd29-fb34-3a2a-ab73-1ff4eb282aef)</span></label>
+          <input id="posToken" type="password" placeholder="paste the POS token issued in IRIS" />
+        </div>
+        <div><label>distributor_NTN_CNIC <span class="muted">(seller)</span></label><input id="posSellerNtn" placeholder="8885801" /></div>
+        <div><label>distributorName <span class="muted">(seller)</span></label><input id="posSellerName" placeholder="Demo Traders (Pvt) Ltd" /></div>
+      </div>
+    </div>
+
+    <div class="split">
+      <div class="panel">
+        <h2>Payload</h2>
+        <div><label>Sample</label><select id="posSample"></select></div>
+        <p class="muted" id="posSampleDesc" style="margin:8px 0 0"></p>
+        <div class="row">
+          <button class="ghost" id="posLoad">Load payload</button>
+          <button class="ghost" id="posFormat">Format JSON</button>
+          <button class="ghost" id="posTotals">Recompute header totals</button>
+          <button class="ghost" id="posCurl">Copy as curl</button>
+        </div>
+        <div style="margin-top:10px">
+          <label>Request body (editable)</label>
+          <textarea id="posBody" spellcheck="false"></textarea>
+        </div>
+        <div class="row"><button class="act" id="posRun">Send to FBR POS</button></div>
+      </div>
+
+      <div class="panel">
+        <h2>Response</h2>
+        <pre class="out" id="posOut">Nothing sent yet.</pre>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Results</h2>
+      <div class="scroll"><table>
+        <thead><tr><th style="width:120px">Sample</th><th style="width:70px">Verdict</th><th style="width:200px">Tracking #</th><th>Detail</th></tr></thead>
+        <tbody id="posResults"><tr><td colspan="4" class="muted">No runs yet.</td></tr></tbody>
+      </table></div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* ------------------------------------------------------------------ *
+ * Data
+ * ------------------------------------------------------------------ */
+const SCENARIOS = __SCENARIOS__;
+
+const DI_BASE = 'https://gw.fbr.gov.pk/di_data/v1/di/';
+const POS_URLS = {
+  sb:   'https://esp.fbr.gov.pk:8244/DigitalInvoicing/v1/PostInvoiceData_v1',
+  prod: 'https://gw.fbr.gov.pk/pdi/v1/api/DigitalInvoicing/PostInvoiceData_v1'
+};
+
+const TODAY = new Date().toISOString().slice(0, 10);
+
+/* POS samples. invoiceType: 1=Purchase 2=Sale 3=Debit Note 4=Credit Note. */
+const POS_SAMPLES = [
+  {
+    id: 'POS-01',
+    title: 'Standard-rate sale, single item, unregistered walk-in buyer',
+    desc: 'The baseline receipt. Proves your codes (uoM, saleType), the header totals and the tracking-number round trip.',
+    payload: {
+      bposId: '05', invoiceType: '2', invoiceDate: TODAY,
+      ntN_CNIC: '3520212345671', buyerSellerName: 'Walk-in Customer', destinationAddress: 'Lahore',
+      saleType: 1,
+      distributor_NTN_CNIC: '8885801', distributorName: 'Demo Traders (Pvt) Ltd',
+      totalSalesTaxApplicable: 180, totalRetailPrice: 0, totalSTWithheldAtSource: 0,
+      totalExtraTax: 0, totalFEDPayable: 0, totalWithheldIncomeTax: 0, totalCVT: 0,
+      invoiceItemDetails: [{
+        hsCode: '0101.2100', productCode: 'SKU-001', productDescription: 'Demo product',
+        rate: 18, uoM: 5, quantity: 1,
+        valueSalesExcludingST: 1000, salesTaxApplicable: 180, retailPrice: 0,
+        stWithheldAtSource: 0, extraTax: 0, furtherTax: 0, sroScheduleNo: 0,
+        fedPayable: 0, cvt: 0, whiT_1: 0, whiT_2: 0, whiT_Section_1: '', whiT_Section_2: '',
+        totalValues: 1180
+      }]
+    }
+  },
+  {
+    id: 'POS-02',
+    title: 'Multi-item receipt with a discounted line',
+    desc: 'Proves header totals are summed from the items and that a discount reduces valueSalesExcludingST before tax.',
+    payload: {
+      bposId: '05', invoiceType: '2', invoiceDate: TODAY,
+      ntN_CNIC: '3520212345671', buyerSellerName: 'Walk-in Customer', destinationAddress: 'Lahore',
+      saleType: 1,
+      distributor_NTN_CNIC: '8885801', distributorName: 'Demo Traders (Pvt) Ltd',
+      totalSalesTaxApplicable: 270, totalRetailPrice: 0, totalSTWithheldAtSource: 0,
+      totalExtraTax: 0, totalFEDPayable: 0, totalWithheldIncomeTax: 0, totalCVT: 0,
+      invoiceItemDetails: [
+        { hsCode: '0101.2100', productCode: 'SKU-001', productDescription: 'Demo product A',
+          rate: 18, uoM: 5, quantity: 1, valueSalesExcludingST: 1000, salesTaxApplicable: 180,
+          retailPrice: 0, stWithheldAtSource: 0, extraTax: 0, furtherTax: 0, sroScheduleNo: 0,
+          fedPayable: 0, cvt: 0, whiT_1: 0, whiT_2: 0, whiT_Section_1: '', whiT_Section_2: '', totalValues: 1180 },
+        { hsCode: '0101.2100', productCode: 'SKU-002', productDescription: 'Demo product B (100 discount)',
+          rate: 18, uoM: 5, quantity: 1, valueSalesExcludingST: 500, salesTaxApplicable: 90,
+          retailPrice: 0, stWithheldAtSource: 0, extraTax: 0, furtherTax: 0, sroScheduleNo: 0,
+          fedPayable: 0, cvt: 0, whiT_1: 0, whiT_2: 0, whiT_Section_1: '', whiT_Section_2: '', totalValues: 590 }
+      ]
+    }
+  },
+  {
+    id: 'POS-03',
+    title: 'Zero-rated / exempt item',
+    desc: 'Proves a rate of 0 with a real sale value is accepted, and that your code does not skip the line.',
+    payload: {
+      bposId: '05', invoiceType: '2', invoiceDate: TODAY,
+      ntN_CNIC: '3520212345671', buyerSellerName: 'Walk-in Customer', destinationAddress: 'Lahore',
+      saleType: 1,
+      distributor_NTN_CNIC: '8885801', distributorName: 'Demo Traders (Pvt) Ltd',
+      totalSalesTaxApplicable: 0, totalRetailPrice: 0, totalSTWithheldAtSource: 0,
+      totalExtraTax: 0, totalFEDPayable: 0, totalWithheldIncomeTax: 0, totalCVT: 0,
+      invoiceItemDetails: [{
+        hsCode: '0101.2100', productCode: 'SKU-ZR', productDescription: 'Zero-rated product',
+        rate: 0, uoM: 5, quantity: 2, valueSalesExcludingST: 800, salesTaxApplicable: 0,
+        retailPrice: 0, stWithheldAtSource: 0, extraTax: 0, furtherTax: 0, sroScheduleNo: 0,
+        fedPayable: 0, cvt: 0, whiT_1: 0, whiT_2: 0, whiT_Section_1: '', whiT_Section_2: '', totalValues: 800
+      }]
+    }
+  },
+  {
+    id: 'POS-04',
+    title: 'Registered buyer with sales tax withheld at source',
+    desc: 'Proves the withholding leg reduces totalValues and lands in totalSTWithheldAtSource.',
+    payload: {
+      bposId: '05', invoiceType: '2', invoiceDate: TODAY,
+      ntN_CNIC: '2046004', buyerSellerName: 'FERTILIZER MANUFAC IRS NEW', destinationAddress: 'Karachi',
+      saleType: 1,
+      distributor_NTN_CNIC: '8885801', distributorName: 'Demo Traders (Pvt) Ltd',
+      totalSalesTaxApplicable: 180, totalRetailPrice: 0, totalSTWithheldAtSource: 36,
+      totalExtraTax: 0, totalFEDPayable: 0, totalWithheldIncomeTax: 0, totalCVT: 0,
+      invoiceItemDetails: [{
+        hsCode: '0101.2100', productCode: 'SKU-001', productDescription: 'Demo product',
+        rate: 18, uoM: 5, quantity: 1, valueSalesExcludingST: 1000, salesTaxApplicable: 180,
+        retailPrice: 0, stWithheldAtSource: 36, extraTax: 0, furtherTax: 0, sroScheduleNo: 0,
+        fedPayable: 0, cvt: 0, whiT_1: 0, whiT_2: 0, whiT_Section_1: '', whiT_Section_2: '', totalValues: 1144
+      }]
+    }
+  },
+  {
+    id: 'POS-05',
+    title: 'Credit Note (customer return), invoiceType 4',
+    desc: 'The reversal path. Run this after a successful sale so the return has something to mirror.',
+    payload: {
+      bposId: '05', invoiceType: '4', invoiceDate: TODAY,
+      ntN_CNIC: '3520212345671', buyerSellerName: 'Walk-in Customer', destinationAddress: 'Lahore',
+      saleType: 1,
+      distributor_NTN_CNIC: '8885801', distributorName: 'Demo Traders (Pvt) Ltd',
+      totalSalesTaxApplicable: 180, totalRetailPrice: 0, totalSTWithheldAtSource: 0,
+      totalExtraTax: 0, totalFEDPayable: 0, totalWithheldIncomeTax: 0, totalCVT: 0,
+      invoiceItemDetails: [{
+        hsCode: '0101.2100', productCode: 'SKU-001', productDescription: 'Demo product (returned)',
+        rate: 18, uoM: 5, quantity: 1, valueSalesExcludingST: 1000, salesTaxApplicable: 180,
+        retailPrice: 0, stWithheldAtSource: 0, extraTax: 0, furtherTax: 0, sroScheduleNo: 0,
+        fedPayable: 0, cvt: 0, whiT_1: 0, whiT_2: 0, whiT_Section_1: '', whiT_Section_2: '', totalValues: 1180
+      }]
+    }
+  }
+];
+
+/* ------------------------------------------------------------------ *
+ * Helpers
+ * ------------------------------------------------------------------ */
+const $ = id => document.getElementById(id);
+const LS = 'fbr-harness-v1';
+const esc = s => String(s == null ? '' : s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+const STATE_KEYS = ['proxy','timeout','diEnv','diOp','diUrl','diToken','sNtn','sName','sProv','sAddr',
+                    'posEnv','posUrl','posToken','posBpos','posSellerNtn','posSellerName'];
+
+function saveState(){
+  const s = {};
+  STATE_KEYS.forEach(k => s[k] = $(k).value);
+  try { localStorage.setItem(LS, JSON.stringify(s)); } catch(e){}
+}
+function loadState(){
+  let s = {};
+  try { s = JSON.parse(localStorage.getItem(LS) || '{}'); } catch(e){}
+  $('proxy').value = s.proxy !== undefined ? s.proxy : 'http://localhost:8787/proxy';
+  STATE_KEYS.forEach(k => { if (k !== 'proxy' && s[k]) $(k).value = s[k]; });
+}
+
+const diEndpoint = () => DI_BASE + $('diOp').value + ($('diEnv').value === 'sb' ? '_sb' : '');
+function syncDiUrl(){ $('diUrl').value = diEndpoint(); saveState(); }
+function syncPosUrl(){ $('posUrl').value = POS_URLS[$('posEnv').value]; saveState(); }
+
+function parseBody(id, out){
+  try { return JSON.parse($(id).value); }
+  catch(e){ $(out).textContent = 'The request body is not valid JSON.\n\n' + e.message; return null; }
+}
+
+/* Sends through the relay when one is configured, otherwise directly (and explains CORS on failure). */
+async function send(url, token, payload){
+  const proxy = $('proxy').value.trim();
+  const ms = Math.max(5, Number($('timeout').value) || 45) * 1000;
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  const started = Date.now();
+  try {
+    let httpStatus, text;
+    if (proxy) {
+      const r = await fetch(proxy, {
+        method:'POST', signal: ctrl.signal,
+        headers:{ 'Content-Type':'application/json', 'x-fbr-target':url, 'x-fbr-token':token },
+        body: JSON.stringify(payload)
+      });
+      const relay = await r.json();
+      if (relay.relayError) return { ok:false, ms:Date.now()-started, error:'The relay could not reach FBR: ' + relay.relayError };
+      httpStatus = relay.httpStatus; text = relay.body;
+    } else {
+      const r = await fetch(url, {
+        method:'POST', signal: ctrl.signal,
+        headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer ' + token },
+        body: JSON.stringify(payload)
+      });
+      httpStatus = r.status; text = await r.text();
+    }
+    let json = null;
+    try { json = JSON.parse(text); } catch(e){}
+    return { ok:true, ms:Date.now()-started, httpStatus, text, json };
+  } catch (e) {
+    const aborted = e.name === 'AbortError';
+    return {
+      ok:false, ms:Date.now()-started,
+      error: aborted
+        ? 'Timed out after ' + (ms/1000) + 's. If this was a POST, FBR may still have accepted it — check before resending.'
+        : (proxy
+            ? 'Could not reach the relay at ' + proxy + '. Is "node fbr-proxy.js" running?'
+            : 'Blocked by CORS. FBR does not allow browser calls. Run "node fbr-proxy.js" and set the Proxy URL above.')
+    };
+  } finally { clearTimeout(timer); }
+}
+
+function curlFor(url, token, payload){
+  return "curl -X POST '" + url + "' \\\n" +
+         "  -H 'Authorization: Bearer " + (token || 'YOUR_TOKEN') + "' \\\n" +
+         "  -H 'Content-Type: application/json' \\\n" +
+         "  -d '" + JSON.stringify(payload).replace(/'/g, "'\\''") + "'";
+}
+async function copy(text, btn){
+  try { await navigator.clipboard.writeText(text); }
+  catch(e){ const t=document.createElement('textarea'); t.value=text; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); }
+  const old = btn.textContent; btn.textContent = 'Copied'; setTimeout(() => btn.textContent = old, 1200);
+}
+function download(name, text, type){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], { type: type || 'text/plain' }));
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
+/* ------------------------------------------------------------------ *
+ * Verdicts — the acceptance checks the guides insist on
+ * ------------------------------------------------------------------ */
+/** DI: header statusCode "00" AND status Valid AND every item "00" (DI guide §8.2). */
+function diVerdict(res){
+  if (!res.ok) return { pass:false, detail:res.error, invoice:'' };
+  if (res.httpStatus === 401) return { pass:false, detail:'HTTP 401 — the token is invalid, missing, or wrong for this environment.', invoice:'' };
+  if (res.httpStatus >= 400) return { pass:false, detail:'HTTP ' + res.httpStatus + ' — ' + (res.text || '').slice(0,300), invoice:'' };
+  if (!res.json) return { pass:false, detail:'FBR replied with non-JSON (gateway or maintenance page): ' + (res.text||'').slice(0,300), invoice:'' };
+
+  const v = res.json.validationResponse;
+  if (!v) return { pass:false, detail:'No validationResponse in the reply.', invoice:'' };
+
+  const items = v.invoiceStatuses || [];
+  const itemErrors = items.filter(i => String(i.statusCode) !== '00')
+    .map(i => 'Item #' + (i.itemSNo || '?') + ': [' + (i.errorCode || '') + '] ' + (i.error || 'rejected'));
+  const headerBad = String(v.statusCode) !== '00' || String(v.status || '').toLowerCase() === 'invalid';
+
+  if (!headerBad && itemErrors.length === 0)
+    return { pass:true, detail:'Valid.', invoice: res.json.invoiceNumber || '(validate only — no invoice number)' };
+
+  const errs = [];
+  if (String(v.statusCode) !== '00' && v.error) errs.push('[' + (v.errorCode||'') + '] ' + v.error);
+  errs.push.apply(errs, itemErrors);
+  if (!errs.length) errs.push('Rejected with status "' + (v.status||'') + '" and no error text.');
+  return { pass:false, detail: errs.join(' | '), invoice:'' };
+}
+
+/** POS: HTTP 2xx AND body statusCode 200 AND a non-empty result (POS guide §8.2). */
+function posVerdict(res){
+  if (!res.ok) return { pass:false, detail:res.error, tracking:'' };
+  if (res.httpStatus === 401) return { pass:false, detail:'HTTP 401 — the token is invalid, missing, or wrong for this environment.', tracking:'' };
+  if (res.httpStatus >= 400) return { pass:false, detail:'HTTP ' + res.httpStatus + ' — ' + (res.text || '').slice(0,300), tracking:'' };
+  if (!res.json) return { pass:false, detail:'FBR replied with non-JSON (gateway or maintenance page): ' + (res.text||'').slice(0,300), tracking:'' };
+  if (Number(res.json.statusCode) !== 200)
+    return { pass:false, detail:'Body statusCode ' + res.json.statusCode + ' — ' + (res.json.errorMessage || 'rejected with no message'), tracking:'' };
+  if (!res.json.result)
+    return { pass:false, detail:'Accepted but no tracking number returned — do not treat this as filed.', tracking:'' };
+  return { pass:true, detail:'Accepted.', tracking: res.json.result };
+}
+
+/* ------------------------------------------------------------------ *
+ * DI tester
+ * ------------------------------------------------------------------ */
+const diRows = [];
+
+function fillScenarios(){
+  $('diScenario').innerHTML = SCENARIOS
+    .map(s => '<option value="' + s.id + '">' + s.id + ' — ' + esc(s.title) + '</option>').join('');
+  describeScenario();
+}
+function describeScenario(){
+  const s = SCENARIOS.find(x => x.id === $('diScenario').value);
+  $('diScenarioDesc').textContent = s ? s.description : '';
+}
+function applySeller(obj){
+  const map = { sellerNTNCNIC:'sNtn', sellerBusinessName:'sName', sellerProvince:'sProv', sellerAddress:'sAddr' };
+  for (const k in map) { const v = $(map[k]).value.trim(); if (v) obj[k] = v; }
+  return obj;
+}
+function scenarioPayload(id){
+  const s = SCENARIOS.find(x => x.id === id);
+  const p = applySeller(JSON.parse(JSON.stringify(s.payload)));
+  if ($('diEnv').value === 'prod') delete p.scenarioId;   // scenarioId is sandbox-only
+  else p.scenarioId = s.id;
+  return p;
+}
+function loadScenario(){
+  if (!$('diScenario').value) return;
+  $('diBody').value = JSON.stringify(scenarioPayload($('diScenario').value), null, 2);
+}
+function renderDiRows(){
+  const tb = $('diResults');
+  if (!diRows.length) { tb.innerHTML = '<tr><td colspan="4" class="muted">No runs yet.</td></tr>'; return; }
+  tb.innerHTML = diRows.map(r =>
+    '<tr><td><code>' + esc(r.id) + '</code></td>' +
+    '<td><span class="pill ' + (r.pass ? 'ok">PASS' : 'bad">FAIL') + '</span></td>' +
+    '<td><code>' + esc(r.invoice) + '</code></td>' +
+    '<td>' + esc(r.detail) + '</td></tr>').join('');
+}
+async function runDi(scenarioId, bodyOverride){
+  const url = $('diUrl').value.trim();
+  const token = $('diToken').value.trim();
+  if (!token) { $('diOut').textContent = 'Paste your DI token first.'; return null; }
+  const payload = bodyOverride || scenarioPayload(scenarioId);
+
+  $('diOut').textContent = 'Sending ' + scenarioId + ' to ' + url + ' …';
+  const res = await send(url, token, payload);
+  const v = diVerdict(res);
+
+  $('diOut').textContent =
+    scenarioId + '  ' + (v.pass ? 'PASS' : 'FAIL') + '   (' + res.ms + 'ms' +
+    (res.httpStatus ? ', HTTP ' + res.httpStatus : '') + ')\n' +
+    v.detail + '\n\n--- request ---\n' + JSON.stringify(payload, null, 2) +
+    '\n\n--- response ---\n' + (res.ok ? (res.json ? JSON.stringify(res.json, null, 2) : res.text) : res.error);
+
+  const i = diRows.findIndex(r => r.id === scenarioId);
+  const row = { id:scenarioId, pass:v.pass, invoice:v.invoice, detail:v.detail };
+  if (i >= 0) diRows[i] = row; else diRows.push(row);
+  renderDiRows();
+  return v;
+}
+
+$('diScenario').addEventListener('change', () => { describeScenario(); loadScenario(); });
+$('diEnv').addEventListener('change', () => { syncDiUrl(); loadScenario(); });
+$('diOp').addEventListener('change', syncDiUrl);
+$('diLoad').addEventListener('click', loadScenario);
+$('applySeller').addEventListener('click', () => {
+  const o = parseBody('diBody','diOut'); if (!o) return;
+  $('diBody').value = JSON.stringify(applySeller(o), null, 2);
+});
+$('diFormat').addEventListener('click', () => {
+  const o = parseBody('diBody','diOut'); if (o) $('diBody').value = JSON.stringify(o, null, 2);
+});
+$('diCurl').addEventListener('click', e => {
+  const o = parseBody('diBody','diOut'); if (o) copy(curlFor($('diUrl').value.trim(), $('diToken').value.trim(), o), e.target);
+});
+$('diRun').addEventListener('click', async e => {
+  const o = parseBody('diBody','diOut'); if (!o) return;
+  e.target.disabled = true;
+  await runDi(o.scenarioId || $('diScenario').value, o);
+  e.target.disabled = false;
+});
+$('diRunAll').addEventListener('click', async e => {
+  if ($('diOp').value === 'postinvoicedata' &&
+      !confirm('This POSTs all ' + SCENARIOS.length + ' scenarios — each creates a real FBR invoice in this environment. Continue?')) return;
+  e.target.disabled = true; $('diRun').disabled = true;
+  diRows.length = 0; renderDiRows();
+  for (const s of SCENARIOS) {
+    $('diScenario').value = s.id; describeScenario(); loadScenario();
+    await runDi(s.id, null);
+  }
+  const passed = diRows.filter(r => r.pass).length;
+  $('diOut').textContent = 'Finished. ' + passed + ' / ' + diRows.length + ' passed. See the results table below.';
+  e.target.disabled = false; $('diRun').disabled = false;
+});
+$('diExport').addEventListener('click', () => {
+  const csv = ['Scenario,Verdict,InvoiceNumber,Detail']
+    .concat(diRows.map(r => [r.id, r.pass?'PASS':'FAIL', r.invoice, '"' + String(r.detail).replace(/"/g,'""') + '"'].join(',')))
+    .join('\n');
+  download('fbr-di-results-' + TODAY + '.csv', csv, 'text/csv');
+});
+
+/* ------------------------------------------------------------------ *
+ * POS tester
+ * ------------------------------------------------------------------ */
+const posRows = [];
+
+function fillPosSamples(){
+  $('posSample').innerHTML = POS_SAMPLES
+    .map(s => '<option value="' + s.id + '">' + s.id + ' — ' + esc(s.title) + '</option>').join('');
+  describePosSample();
+}
+function describePosSample(){
+  const s = POS_SAMPLES.find(x => x.id === $('posSample').value);
+  $('posSampleDesc').textContent = s ? s.desc : '';
+}
+function applyPosIdentity(p){
+  const b = $('posBpos').value.trim(); if (b) p.bposId = b;
+  const n = $('posSellerNtn').value.trim(); if (n) p.distributor_NTN_CNIC = n;
+  const nm = $('posSellerName').value.trim(); if (nm) p.distributorName = nm;
+  return p;
+}
+function loadPosSample(){
+  const s = POS_SAMPLES.find(x => x.id === $('posSample').value);
+  if (!s) return;
+  $('posBody').value = JSON.stringify(applyPosIdentity(JSON.parse(JSON.stringify(s.payload))), null, 2);
+}
+/* Header totals must equal the sum of the item lines — recompute rather than trust the sample. */
+function recomputeTotals(){
+  const p = parseBody('posBody','posOut'); if (!p) return;
+  const it = p.invoiceItemDetails || [];
+  const sum = f => Math.round(it.reduce((a,x) => a + (Number(x[f]) || 0), 0) * 100) / 100;
+  p.totalSalesTaxApplicable = sum('salesTaxApplicable');
+  p.totalRetailPrice        = sum('retailPrice');
+  p.totalSTWithheldAtSource = sum('stWithheldAtSource');
+  p.totalExtraTax           = sum('extraTax');
+  p.totalFEDPayable         = sum('fedPayable');
+  p.totalCVT                = sum('cvt');
+  p.totalWithheldIncomeTax  = Math.round(it.reduce((a,x) => a + (Number(x.whiT_1)||0) + (Number(x.whiT_2)||0), 0) * 100) / 100;
+  $('posBody').value = JSON.stringify(p, null, 2);
+  $('posOut').textContent = 'Header totals recomputed from the ' + it.length + ' item line(s).';
+}
+function renderPosRows(){
+  const tb = $('posResults');
+  if (!posRows.length) { tb.innerHTML = '<tr><td colspan="4" class="muted">No runs yet.</td></tr>'; return; }
+  tb.innerHTML = posRows.map(r =>
+    '<tr><td><code>' + esc(r.id) + '</code></td>' +
+    '<td><span class="pill ' + (r.pass ? 'ok">PASS' : 'bad">FAIL') + '</span></td>' +
+    '<td><code>' + esc(r.tracking) + '</code></td>' +
+    '<td>' + esc(r.detail) + '</td></tr>').join('');
+}
+
+$('posSample').addEventListener('change', () => { describePosSample(); loadPosSample(); });
+$('posEnv').addEventListener('change', syncPosUrl);
+$('posLoad').addEventListener('click', loadPosSample);
+$('posFormat').addEventListener('click', () => {
+  const o = parseBody('posBody','posOut'); if (o) $('posBody').value = JSON.stringify(o, null, 2);
+});
+$('posTotals').addEventListener('click', recomputeTotals);
+$('posCurl').addEventListener('click', e => {
+  const o = parseBody('posBody','posOut'); if (o) copy(curlFor($('posUrl').value.trim(), $('posToken').value.trim(), o), e.target);
+});
+$('posRun').addEventListener('click', async e => {
+  const p = parseBody('posBody','posOut'); if (!p) return;
+  const token = $('posToken').value.trim();
+  if (!token) { $('posOut').textContent = 'Paste your POS token first.'; return; }
+  if ($('posEnv').value === 'prod' &&
+      !confirm('This is the PRODUCTION endpoint. POS has no dry run — this files a real receipt with FBR. Continue?')) return;
+
+  e.target.disabled = true;
+  const url = $('posUrl').value.trim();
+  const id = $('posSample').value;
+  $('posOut').textContent = 'Sending to ' + url + ' …';
+  const res = await send(url, token, p);
+  const v = posVerdict(res);
+  $('posOut').textContent =
+    id + '  ' + (v.pass ? 'PASS' : 'FAIL') + '   (' + res.ms + 'ms' +
+    (res.httpStatus ? ', HTTP ' + res.httpStatus : '') + ')\n' + v.detail +
+    '\n\n--- request ---\n' + JSON.stringify(p, null, 2) +
+    '\n\n--- response ---\n' + (res.ok ? (res.json ? JSON.stringify(res.json, null, 2) : res.text) : res.error);
+  const i = posRows.findIndex(r => r.id === id);
+  const row = { id:id, pass:v.pass, tracking:v.tracking, detail:v.detail };
+  if (i >= 0) posRows[i] = row; else posRows.push(row);
+  renderPosRows();
+  e.target.disabled = false;
+});
+
+/* ------------------------------------------------------------------ *
+ * Docs: per-view table of contents built from the h2s
+ * ------------------------------------------------------------------ */
+const slug = t => t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
+
+function buildTocs(){
+  document.querySelectorAll('.doclayout').forEach(layout => {
+    const article = layout.querySelector('article.doc');
+    const aside = layout.querySelector('aside.toc');
+    const seen = {};
+    const links = [];
+    article.querySelectorAll('h2').forEach(h => {
+      let id = slug(h.textContent);
+      if (seen[id]) id += '-' + (++seen[id]); else seen[id] = 1;
+      h.id = id;
+      links.push('<a href="#' + id + '">' + esc(h.textContent) + '</a>');
+    });
+    aside.innerHTML = links.length ? '<h4>On this page</h4>' + links.join('') : '';
+  });
+}
+
+/* Highlights the section currently in view. */
+function watchHeadings(){
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      if (!en.isIntersecting) return;
+      const layout = en.target.closest('.doclayout');
+      if (!layout) return;
+      layout.querySelectorAll('aside.toc a').forEach(a =>
+        a.classList.toggle('here', a.getAttribute('href') === '#' + en.target.id));
+    });
+  }, { rootMargin: '-60px 0px -75% 0px' });
+  document.querySelectorAll('article.doc h2').forEach(h => obs.observe(h));
+}
+
+/* ------------------------------------------------------------------ *
+ * View routing
+ * ------------------------------------------------------------------ */
+const VIEWS = ['overview','di-guide','pos-guide','scenarios','di-test','pos-test'];
+
+function show(view, keepScroll){
+  if (VIEWS.indexOf(view) === -1) view = 'overview';
+  VIEWS.forEach(v => $('view-' + v).classList.toggle('on', v === view));
+  document.querySelectorAll('nav.main button').forEach(b =>
+    b.classList.toggle('on', b.dataset.view === view));
+  // The connection panel is shared by both testers.
+  $('connection').classList.toggle('hide', view !== 'di-test' && view !== 'pos-test');
+  if (!keepScroll) window.scrollTo(0, 0);
+  try { history.replaceState(null, '', '#' + view); } catch(e){}
+}
+
+document.querySelectorAll('nav.main button').forEach(b =>
+  b.addEventListener('click', () => show(b.dataset.view)));
+
+/* A cross-reference inside a guide jumps to that guide's view. */
+document.addEventListener('click', e => {
+  const a = e.target.closest('a.xref');
+  if (!a) return;
+  e.preventDefault();
+  show(a.dataset.view);
+});
+
+/* ------------------------------------------------------------------ *
+ * Init
+ * ------------------------------------------------------------------ */
+$('copyProxy').addEventListener('click', e => copy($('proxySrc').textContent, e.target));
+$('dlProxy').addEventListener('click', () => download('fbr-proxy.js', $('proxySrc').textContent, 'text/javascript'));
+
+document.querySelectorAll('input,select').forEach(el => el.addEventListener('change', saveState));
+
+fillScenarios();
+fillPosSamples();
+loadState();
+if (!$('diUrl').value) syncDiUrl();
+if (!$('posUrl').value) syncPosUrl();
+loadScenario();
+loadPosSample();
+buildTocs();
+watchHeadings();
+
+/* A #hash naming a view opens it; anything else is a heading anchor inside the docs. */
+const hash = (location.hash || '').replace('#', '');
+if (VIEWS.indexOf(hash) !== -1) {
+  show(hash);
+} else if (hash && document.getElementById(hash)) {
+  const layout = document.getElementById(hash).closest('.view');
+  show(layout ? layout.id.replace('view-', '') : 'overview', true);
+  document.getElementById(hash).scrollIntoView();
+} else {
+  show('overview');
+}
+</script>
+</body>
+</html>

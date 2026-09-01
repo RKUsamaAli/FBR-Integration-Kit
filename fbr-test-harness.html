@@ -1,0 +1,2397 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FBR Integration Kit — guides + test harness</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --panel:#fff; --ink:#111827; --muted:#6b7280; --line:#e5e7eb;
+    --brand:#0f766e; --brand-dk:#0b3b39; --brand-ink:#fff;
+    --ok:#047857; --ok-bg:#ecfdf5; --bad:#b91c1c; --bad-bg:#fef2f2;
+    --warn:#92400e; --warn-bg:#fffbeb; --warn-line:#fde68a;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.6 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+
+  header.top{background:var(--brand-dk);color:#fff;padding:14px 20px}
+  header.top h1{margin:0;font-size:17px;font-weight:650}
+  header.top p{margin:4px 0 0;font-size:12.5px;color:#a7d5d0}
+
+  nav.main{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--line);
+           padding:8px 20px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  nav.main button{border:1px solid var(--line);background:#fff;padding:7px 14px;border-radius:8px;
+                  cursor:pointer;font:inherit;font-weight:600;color:var(--muted);white-space:nowrap}
+  nav.main button:hover{border-color:#c9cdd3}
+  nav.main button.on{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+  nav.main .sep{width:1px;height:22px;background:var(--line);margin:0 4px}
+  nav.main .stamp{margin-left:auto;font-size:11px;color:var(--muted)}
+
+  .wrap{max-width:1240px;margin:0 auto;padding:16px 20px 80px}
+  .view{display:none}
+  .view.on{display:block}
+
+  /* ---------- documentation ---------- */
+  .doclayout{display:grid;grid-template-columns:236px 1fr;gap:22px;align-items:start}
+  @media(max-width:980px){.doclayout{grid-template-columns:1fr}.toc{display:none}}
+  .toc{position:sticky;top:60px;background:var(--panel);border:1px solid var(--line);border-radius:10px;
+       padding:12px;max-height:calc(100vh - 90px);overflow:auto}
+  .toc h4{margin:0 0 8px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+  .toc a{display:block;padding:4px 6px;border-radius:5px;font-size:12.5px;color:var(--ink);
+         text-decoration:none;line-height:1.35}
+  .toc a:hover{background:#f1f5f4}
+  .toc a.here{background:#e8f2f1;color:var(--brand);font-weight:600}
+
+  article.doc{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:26px 30px;min-width:0}
+  article.doc h1{font-size:23px;margin:0 0 6px;line-height:1.3}
+  article.doc h2{font-size:17px;margin:30px 0 10px;padding-top:14px;border-top:1px solid var(--line);scroll-margin-top:64px}
+  article.doc h2:first-of-type{border-top:0}
+  article.doc h3{font-size:14.5px;margin:20px 0 6px;scroll-margin-top:64px}
+  article.doc h4{font-size:13px;margin:16px 0 4px;color:var(--muted)}
+  article.doc p{margin:9px 0}
+  article.doc ul,article.doc ol{margin:9px 0;padding-left:22px}
+  article.doc li{margin:4px 0}
+  article.doc li.task{list-style:none;margin-left:-18px}
+  article.doc li.task input{margin-right:7px;vertical-align:-1px}
+  article.doc hr{border:0;border-top:1px solid var(--line);margin:22px 0}
+  article.doc blockquote{margin:12px 0;padding:10px 14px;background:var(--warn-bg);
+                         border:1px solid var(--warn-line);border-radius:8px;color:var(--warn);font-size:13px}
+  article.doc a{color:var(--brand)}
+  code{font-family:var(--mono);font-size:.88em;background:#f1f3f5;padding:1px 5px;border-radius:4px;
+       border:1px solid #e6e8ea;word-break:break-word}
+  pre.code{background:#0b1220;color:#d6e2f0;padding:14px 16px;border-radius:9px;overflow:auto;margin:12px 0}
+  pre.code code{background:transparent;border:0;padding:0;color:inherit;font-size:12.5px;line-height:1.55}
+  .tablewrap{overflow-x:auto;margin:12px 0}
+  article.doc table{width:100%;border-collapse:collapse;font-size:13px;min-width:520px}
+  article.doc th,article.doc td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  article.doc th{background:#fafbfc;font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+  article.doc tbody tr:hover{background:#fafbfc}
+
+  /* ---------- testers ---------- */
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:14px}
+  .panel h2{margin:0 0 12px;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+  .grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+  label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:3px}
+  input,select,textarea{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:6px;
+                        font:inherit;background:#fff;color:var(--ink)}
+  textarea{font-family:var(--mono);font-size:12px;min-height:300px;resize:vertical;white-space:pre;overflow:auto}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+  button.act{border:1px solid var(--brand);background:var(--brand);color:#fff;padding:8px 16px;
+             border-radius:7px;cursor:pointer;font:inherit;font-weight:600}
+  button.ghost{border:1px solid var(--line);background:#fff;color:var(--ink);padding:8px 14px;
+               border-radius:7px;cursor:pointer;font:inherit;font-weight:600}
+  button:disabled{opacity:.5;cursor:not-allowed}
+  .note{background:var(--warn-bg);border:1px solid var(--warn-line);color:var(--warn);
+        padding:11px 13px;border-radius:9px;font-size:12.5px;margin-bottom:14px}
+  .note code{background:rgba(0,0,0,.05);border-color:transparent}
+  .split{display:grid;gap:14px;grid-template-columns:1fr 1fr}
+  @media(max-width:980px){.split{grid-template-columns:1fr}}
+  pre.out{font-family:var(--mono);font-size:12px;background:#0b1220;color:#d6e2f0;padding:12px;
+          border-radius:8px;overflow:auto;max-height:520px;white-space:pre-wrap;word-break:break-word;margin:0}
+  .panel table{width:100%;border-collapse:collapse;font-size:12.5px}
+  .panel th,.panel td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+  .panel th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+  .pill{display:inline-block;padding:1px 8px;border-radius:99px;font-size:11px;font-weight:700}
+  .pill.ok{background:var(--ok-bg);color:var(--ok)}
+  .pill.bad{background:var(--bad-bg);color:var(--bad)}
+  .muted{color:var(--muted);font-size:12px;font-weight:400}
+  .hide{display:none}
+  .scroll{max-height:420px;overflow:auto}
+
+  @media print{
+    nav.main,.toc,.note,#connection,#view-di-test,#view-pos-test{display:none!important}
+    body{background:#fff}
+    .doclayout{grid-template-columns:1fr}
+    article.doc{border:0;padding:0}
+    pre.code{background:#f4f6f8;color:#111;border:1px solid var(--line)}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <h1>FBR Integration Kit</h1>
+  <p>Digital Invoicing (DI) &amp; POS Digital Invoicing &mdash; the guides and a live test harness in one offline file.</p>
+</header>
+
+<nav class="main">
+  <button data-view="overview">Overview</button>
+  <button data-view="di-guide">DI Guide</button>
+  <button data-view="pos-guide">POS Guide</button>
+  <button data-view="scenarios">Scenarios</button>
+  <span class="sep"></span>
+  <button data-view="di-test">DI Tester</button>
+  <button data-view="pos-test">POS Tester</button>
+  <span class="stamp">built 2026-09-01</span>
+</nav>
+
+<div class="wrap">
+
+  <!-- ======================= OVERVIEW ======================= -->
+  <section id="view-overview" class="view">
+    <div class="doclayout">
+      <aside class="toc"></aside>
+      <article class="doc">
+        <h1>FBR Integration Pack — for the developer</h1>
+<p>Everything needed to integrate Pakistan's FBR e-invoicing into an application, from registration to a verified production go-live. Self-contained: nothing here depends on any particular codebase.</p>
+<p><strong>If you only take one file, take <a class="xref" data-view="di-test" href="#di-test"><code>fbr-test-harness.html</code></a>.</strong> It carries both guides, the scenario reference, the relay source and a working tester in a single offline page — open it in a browser, no install, no network.</p>
+<h2>Files</h2>
+<div class="tablewrap"><table><thead><tr><th>File</th><th>What it is</th></tr></thead><tbody><tr><td><a class="xref" data-view="di-test" href="#di-test"><code>fbr-test-harness.html</code></a></td><td><strong>The whole kit as one offline page.</strong> Both guides to read, and a live tester: paste a token, load a scenario, post or validate, get a PASS/FAIL table and a CSV. Covers DI and POS.</td></tr><tr><td><a class="xref" data-view="di-guide" href="#di-guide"><code>fbr-digital-invoice-developer-guide.md</code></a></td><td><strong>Digital Invoicing (DI)</strong> — the full guide. Registration, sandbox token, payload, calculations, response handling, error codes, go-live.</td></tr><tr><td><a class="xref" data-view="pos-guide" href="#pos-guide"><code>fbr-pos-digital-invoice-developer-guide.md</code></a></td><td><strong>POS Digital Invoicing</strong> — the full guide. Terminal registration, BPOS ID, payload, code lists, response handling, go-live.</td></tr><tr><td><a class="xref" data-view="scenarios" href="#scenarios"><code>fbr-di-sandbox-scenarios.md</code></a></td><td>The 28 DI test scenarios (SN001–SN028) explained, grouped by what each one exercises, plus the failure table.</td></tr><tr><td><code>fbr-di-sandbox-scenarios.json</code></td><td>The same 28 scenarios as ready-to-post request bodies.</td></tr><tr><td><code>fbr-proxy.js</code></td><td>~60-line Node relay. Required, because a browser cannot call FBR directly (no CORS headers). Also embedded in the HTML page, with a download button.</td></tr><tr><td><code>harness.template.html</code>, <code>build-harness.js</code></td><td>How the single page is produced. Edit the markdown, then run <code>node build-harness.js</code> to regenerate <a class="xref" data-view="di-test" href="#di-test"><code>fbr-test-harness.html</code></a>. Nothing to install.</td></tr></tbody></table></div>
+<h2>Which one does this business need?</h2>
+<div class="tablewrap"><table><thead><tr><th></th><th><strong>Digital Invoicing (DI)</strong></th><th><strong>POS Digital Invoicing</strong></th></tr></thead><tbody><tr><td>Purpose</td><td>Legal sales-tax invoice register</td><td>Retail till/receipt reporting (SRO 1006)</td></tr><tr><td>Typical user</td><td>Manufacturer, importer, distributor, wholesaler, corporate seller</td><td>Tier-1 retailer, restaurant, outlet counter</td></tr><tr><td>Registers</td><td>The <strong>invoice</strong></td><td>The <strong>terminal</strong> (a BPOS ID per till)</td></tr><tr><td>Endpoint</td><td><code>gw.fbr.gov.pk/di_data/v1/di/...</code></td><td><code>gw.fbr.gov.pk/pdi/v1/api/DigitalInvoicing/...</code></td></tr><tr><td>Field style</td><td>Descriptive strings — <code>"18%"</code>, <code>"Numbers, pieces, units"</code></td><td>Numeric codes — <code>18</code>, <code>uoM: 5</code></td></tr><tr><td>Success signal</td><td><code>validationResponse.statusCode == "00"</code> (string) → <code>invoiceNumber</code></td><td>body <code>statusCode == 200</code> (number) → <code>result</code> tracking number</td></tr><tr><td>Per-item validation</td><td>Yes</td><td>No — one verdict per invoice</td></tr><tr><td>Dry-run endpoint</td><td><strong>Yes</strong> — <code>validateinvoicedata</code></td><td><strong>None. Every call writes.</strong></td></tr><tr><td>Onboarding gate</td><td>Pass the FBR-assigned SN scenarios in sandbox</td><td>Register + activate the terminal</td></tr></tbody></table></div>
+<p>Some businesses must run <strong>both</strong> (a manufacturer with a retail outlet). Then keep two independent settings blocks, two tokens, and pick exactly one channel per sale — never post the same sale to both.</p>
+<h2>Order of work</h2>
+<ol><li><strong>Read the guide</strong> for the channel you need — DI or POS. Open <a class="xref" data-view="di-test" href="#di-test"><code>fbr-test-harness.html</code></a> and use the <strong>DI Guide</strong> / <strong>POS Guide</strong> tabs, or read the markdown files directly.</li><li><strong>Get the sandbox token</strong> (guide §4). This is IRIS/portal work, not code, and it takes days. Start it before writing anything.</li><li><strong>Import FBR's lookup lists</strong> (HS code, UoM, sale type, rate, SRO, province) and put them on your product and customer masters as dropdowns. Skipping this is the single largest source of production rejections.</li><li><strong>Prove the payload with the harness</strong> before wiring it into the app:<pre class="code" data-lang="bash"><code>node fbr-proxy.js            # leave running (source + download button on the Overview tab)
+open fbr-test-harness.html   # or just double-click it</code></pre>Go to the <strong>DI Tester</strong> tab, paste the sandbox token, set the seller identity, and run <strong>Validate All</strong> first — it writes nothing.</li><li><strong>Wire it into the application</strong>, then repeat the scenarios <em>from the app</em>. The harness proves FBR accepts a payload; only the app proves your mapping produces that payload from a real sale.</li><li><strong>Complete the assigned scenarios</strong>, generate the production token, switch the environment, post one real low-value document, and verify it in IRIS.</li></ol>
+<h2>Five things that will bite, whichever channel you build</h2>
+<ol><li><strong>HTTP 200 does not mean accepted.</strong> Both APIs return 200 with a rejection in the body. DI also returns a <code>"00"</code> header with a failing item underneath. Check the body, and check every item.</li><li><strong>Call FBR outside your database transaction.</strong> Commit the sale first, then submit. A timeout must not roll back a real sale.</li><li><strong>Never auto-retry a timed-out submission.</strong> FBR may have accepted it. A blind retry files a duplicate legal document that can only be undone with a debit/credit note.</li><li><strong>Lock a document once FBR accepts it</strong> — no edit, no delete, no date change.</li><li><strong>Tokens are server-side secrets.</strong> Five-year credentials for a taxpayer's identity. Never in a browser, a mobile binary, or git.</li></ol>
+<h2>Verifying you are done</h2>
+<p>Each guide ends with a go-live checklist. Treat it as the definition of done — a passing sandbox scenario is not the same thing as a shippable integration.</p>
+        <h2>The relay script (<code>fbr-proxy.js</code>)</h2>
+        <p>The testers in this page need it. Save it next to this file and run <code>node fbr-proxy.js</code>
+           &mdash; or use the buttons below if you only have this HTML file.</p>
+        <p>
+          <button class="ghost" id="copyProxy">Copy the source</button>
+          <button class="ghost" id="dlProxy">Download fbr-proxy.js</button>
+        </p>
+        <pre class="code"><code id="proxySrc">#!/usr/bin/env node
+/**
+ * fbr-proxy.js — a small CORS relay so fbr-test-harness.html can call FBR from a browser.
+ *
+ * WHY THIS EXISTS
+ * gw.fbr.gov.pk does not send Access-Control-Allow-Origin headers, so a browser refuses to let
+ * page JavaScript read FBR's reply — even when FBR answered correctly. The failure looks like
+ * "Failed to fetch" and is indistinguishable from FBR being down. This relay runs on your own
+ * machine, forwards the request server-side (no CORS in Node), and returns the reply with
+ * permissive CORS headers so the harness can display it.
+ *
+ * RUN:    node fbr-proxy.js            (listens on http://localhost:8787)
+ *         PORT=9000 node fbr-proxy.js  (custom port)
+ * USE:    In fbr-test-harness.html put http://localhost:8787/proxy in the "Proxy URL" box.
+ *
+ * The harness sends: POST http://localhost:8787/proxy
+ *                    headers: x-fbr-target: &lt;the real FBR url&gt;, x-fbr-token: &lt;your token&gt;
+ *                    body:    the invoice JSON
+ *
+ * SECURITY: binds to 127.0.0.1 only and never logs the token. It is a developer tool — do not
+ * deploy it and do not put it on a shared host. Your production integration must call FBR from
+ * your own backend, never from a browser.
+ *
+ * Requires Node 18+ (uses global fetch).
+ */
+const http = require('http');
+const PORT = process.env.PORT || 8787;
+
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'content-type,x-fbr-target,x-fbr-token',
+  'Access-Control-Allow-Methods': 'POST,GET,OPTIONS',
+};
+
+http.createServer((req, res) =&gt; {
+  if (req.method === 'OPTIONS') { res.writeHead(204, CORS); return res.end(); }
+
+  const target = req.headers['x-fbr-target'];
+  const token = req.headers['x-fbr-token'];
+  if (!target) {
+    res.writeHead(400, { ...CORS, 'content-type': 'application/json' });
+    return res.end('{"error":"x-fbr-target header is missing"}');
+  }
+
+  let body = '';
+  req.on('data', c =&gt; (body += c));
+  req.on('end', async () =&gt; {
+    const started = Date.now();
+    try {
+      const upstream = await fetch(target, {
+        method: req.method === 'GET' ? 'GET' : 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: 'Bearer ' + token } : {}),
+        },
+        ...(req.method === 'GET' ? {} : { body }),
+      });
+      const text = await upstream.text();
+      console.log(new Date().toISOString() + '  ' + upstream.status + '  ' + (Date.now() - started) + 'ms  ' + target);
+      res.writeHead(200, { ...CORS, 'content-type': 'application/json' });
+      res.end(JSON.stringify({ httpStatus: upstream.status, body: text }));
+    } catch (err) {
+      console.error(new Date().toISOString() + '  RELAY-FAIL  ' + target + '  ' + err.message);
+      res.writeHead(200, { ...CORS, 'content-type': 'application/json' });
+      res.end(JSON.stringify({ httpStatus: 0, body: '', relayError: String(err.message || err) }));
+    }
+  });
+}).listen(PORT, '127.0.0.1', () =&gt; {
+  console.log('FBR relay listening on http://localhost:' + PORT + '/proxy  (Ctrl+C to stop)');
+});
+</code></pre>
+      </article>
+    </div>
+  </section>
+
+  <!-- ======================= DI GUIDE ======================= -->
+  <section id="view-di-guide" class="view">
+    <div class="doclayout">
+      <aside class="toc"></aside>
+      <article class="doc"><h1>FBR Digital Invoicing (DI) — Developer Integration Guide</h1>
+<p><strong>Audience:</strong> a developer integrating FBR Digital Invoicing into an application from scratch. <strong>Scope:</strong> registration → sandbox token → passing all assigned scenarios → production token → live posting → printing. <strong>Companion files:</strong> <a class="xref" data-view="scenarios" href="#scenarios"><code>fbr-di-sandbox-scenarios.md</code></a> (case scenarios), <code>fbr-di-sandbox-scenarios.json</code> (28 ready payloads), <a class="xref" data-view="di-test" href="#di-test"><code>fbr-test-harness.html</code></a> (browser test runner), <code>fbr-proxy.js</code> (CORS relay). <strong>Reference spec:</strong> <code>../FBR_Digital_Invoicing_API_Technical_Specification_User_Manual_v1.12.md</code></p>
+<hr />
+<h2>1. What DI is, and when it applies</h2>
+<p>Digital Invoicing is FBR's <strong>real-time sales-tax invoice register</strong>. Every sales-tax invoice a registered person issues (B2B and B2C) is POSTed to FBR <strong>as it is issued</strong>. FBR validates it, and if it passes, returns an <strong>official FBR invoice number</strong> (e.g. <code>7000007DI1747119701593</code>). That number — plus a QR code of it — must be printed on the customer's invoice. An invoice without an FBR number is not a legal sales-tax invoice.</p>
+<p>Who it applies to: sales-tax registered persons notified by FBR (importers, manufacturers, wholesalers, distributors, large retailers, and by extension most corporate sellers). Read <a class="xref" data-view="pos-guide" href="#pos-guide"><code>fbr-pos-digital-invoice-developer-guide.md</code></a> for the separate POS channel and §2 below for which one you need.</p>
+<p><strong>Two hard rules that shape your design:</strong></p>
+<ol><li>FBR is the <em>source of truth</em> for the invoice number. Your app's own invoice number is internal.</li><li>Once FBR accepts an invoice, it cannot be edited or deleted — only reversed with a <strong>Debit Note</strong> that references the original FBR number. So your invoice must be <strong>locked</strong> in your database the moment FBR accepts it.</li></ol>
+<hr />
+<h2>2. DI vs POS — pick the right one</h2>
+<div class="tablewrap"><table><thead><tr><th></th><th><strong>Digital Invoicing (DI)</strong></th><th><strong>POS Digital Invoicing</strong></th></tr></thead><tbody><tr><td>Purpose</td><td>Legal sales-tax invoice register</td><td>Retail till/receipt reporting (SRO 1006)</td></tr><tr><td>Typical user</td><td>Manufacturer, importer, distributor, wholesaler, corporate seller</td><td>Tier-1 retailer, restaurant, outlet counter</td></tr><tr><td>Registers</td><td>The <em>invoice</em></td><td>The <em>terminal</em> (each till has a BPOS ID)</td></tr><tr><td>Endpoint</td><td><code>gw.fbr.gov.pk/di_data/v1/di/...</code></td><td><code>gw.fbr.gov.pk/pdi/v1/api/DigitalInvoicing/...</code></td></tr><tr><td>Field style</td><td>Descriptive strings (<code>"18%"</code>, <code>"Numbers, pieces, units"</code>)</td><td>Numeric codes (<code>18</code>, <code>uoM: 5</code>)</td></tr><tr><td>Returns</td><td><code>invoiceNumber</code> + per-item validation statuses</td><td><code>result</code> = tracking number</td></tr><tr><td>Dry-run endpoint</td><td><strong>Yes</strong> (<code>validateinvoicedata</code>)</td><td><strong>No</strong> — every call is live</td></tr><tr><td>Test scenarios</td><td><strong>Yes</strong>, <code>scenarioId</code> SN001–SN028</td><td>No scenario concept</td></tr><tr><td>Debit/credit notes</td><td><code>invoiceType: "Debit Note"</code> + <code>invoiceRefNo</code></td><td><code>invoiceType: 3</code> / <code>4</code></td></tr><tr><td>Onboarding gate</td><td>Must pass FBR-assigned scenarios in sandbox</td><td>Register terminal, then post</td></tr></tbody></table></div>
+<p>A business can be required to do <strong>both</strong> (a manufacturer with a retail outlet). If so, treat them as two independent channels with their own tokens, their own settings, and a per-sale choice of which one a given invoice goes to. Never post the same sale to both.</p>
+<hr />
+<h2>3. Prerequisites (business side — do this first, it takes days)</h2>
+<p>The seller must have, before you write any code:</p>
+<ol><li><strong>Active NTN / STRN</strong> — sales-tax registered and active on FBR's ATL.</li><li><strong>IRIS login</strong> for that NTN (<code>https://iris.fbr.gov.pk</code>).</li><li><strong>Business activity / sector correctly set in IRIS.</strong> This is not cosmetic: FBR derives <em>which scenarios you must pass</em> from the declared sector. A wrong sector means you will be assigned scenarios you cannot legitimately produce.</li><li><strong>Correct registered province and address in IRIS.</strong> Your payload's <code>sellerProvince</code> / <code>sellerAddress</code> must match FBR's record.</li></ol>
+<hr />
+<h2>4. Getting the SANDBOX token</h2>
+<p>Done once, by the seller (or by you with their IRIS access). The token is a long-lived (5-year) bearer token issued by PRAL.</p>
+<ol><li>Log in to <strong><code>https://iris.fbr.gov.pk</code></strong> with the seller's NTN credentials.</li><li>Open the <strong>Digital Invoicing</strong> area (in current IRIS it appears under the left menu as <em>Digital Invoicing</em> / <em>e-Invoicing</em>; on some profiles it is reached from <strong>Registration → Form 181 / Licence Integration</strong>).</li><li>Choose <strong>Register for Digital Invoicing</strong> and submit the integration request. Select <strong>self-integration / in-house ERP</strong> (not a licensed integrator) if you are writing the code.</li><li>Open the <strong>Sandbox</strong> tab. Two things appear there:</li><li><strong>Generate Token</strong> → a GUID-style token. <strong>It is shown once. Copy it immediately</strong> into your password manager, then into your app's settings.</li><li><strong>The list of scenarios assigned to this seller</strong> (a subset of SN001–SN028, chosen from the declared business activity). Write this list down — it is exactly what you must pass.</li><li>Store the token server-side only (encrypted config / secrets store). It is a 5-year credential for a taxpayer's identity. It must never reach the browser, a mobile app, or a git repository.</li></ol>
+<blockquote>If the <em>Digital Invoicing</em> menu is not visible, the NTN's profile is missing a sales-tax registration or the business activity is unset. That is an IRIS/registration fix, not an API fix.</blockquote>
+<hr />
+<h2>5. Endpoints and authentication</h2>
+<div class="tablewrap"><table><thead><tr><th>Purpose</th><th>Environment</th><th>URL</th></tr></thead><tbody><tr><td>Post invoice (saves to FBR ledger)</td><td>Sandbox</td><td><code>https://gw.fbr.gov.pk/di_data/v1/di/postinvoicedata_sb</code></td></tr><tr><td>Post invoice</td><td>Production</td><td><code>https://gw.fbr.gov.pk/di_data/v1/di/postinvoicedata</code></td></tr><tr><td>Validate only (no save)</td><td>Sandbox</td><td><code>https://gw.fbr.gov.pk/di_data/v1/di/validateinvoicedata_sb</code></td></tr><tr><td>Validate only</td><td>Production</td><td><code>https://gw.fbr.gov.pk/di_data/v1/di/validateinvoicedata</code></td></tr></tbody></table></div>
+<p>The environment is chosen <strong>only</strong> by the <code>_sb</code> suffix. Sandbox and production tokens are different and are not interchangeable — a production token on a <code>_sb</code> URL returns 401.</p>
+<p>Every request:</p>
+<pre class="code"><code>POST &lt;url&gt;
+Authorization: Bearer &lt;token&gt;
+Content-Type: application/json</code></pre>
+<p><strong>Design note:</strong> store the base URL as configuration, not a constant, and derive the operation segment at call time. That way one setting serves both post and validate, and FBR can move the host without a code release.</p>
+<h3>5.1 Reference (lookup) APIs</h3>
+<p>Several payload fields must carry values FBR recognises <em>verbatim</em> — <code>sellerProvince</code>, <code>uoM</code>, <code>rate</code>, <code>saleType</code>, <code>hsCode</code>, <code>sroScheduleNo</code>, <code>sroItemSerialNo</code>. FBR publishes read-only lookup APIs for these under <code>https://gw.fbr.gov.pk/pdi/v1/...</code> (provinces, doctypecode, itemdesccode, transtypecode, uom, SroSchedule, sroitemcode, and <code>pdi/v2/SaleTypeToRate</code>), plus <code>dist/v1/Get_Reg_Type</code> to check whether a buyer NTN/CNIC is registered.</p>
+<p><strong>Confirm the exact paths against §5 of the spec PDF issued with your token</strong> — FBR has renumbered them between releases. What matters for your build, whatever the paths turn out to be:</p>
+<ul><li><strong>Cache them.</strong> Pull each list on a schedule (nightly is plenty) into your own tables. Never call a lookup API inside an invoice-posting request.</li><li><strong>Bind by value, not by index.</strong> Store the FBR string (<code>"Numbers, pieces, units"</code>) on your product/UOM master, not a positional id.</li><li><strong>Make them selectable in your UI.</strong> HS code, UOM, sale type and SRO must be dropdowns sourced from the cached lists. Free text here is the single largest cause of production rejections.</li><li><strong>Use <code>Get_Reg_Type</code> at buyer-entry time</strong>, cached per buyer, to set <code>buyerRegistrationType</code> correctly (see error <code>0053</code> in §10).</li></ul>
+<hr />
+<h2>6. The payload</h2>
+<p>One header, plus an <code>items</code> array. Field names are case-sensitive and must match exactly.</p>
+<h3>6.1 Header</h3>
+<div class="tablewrap"><table><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr></thead><tbody><tr><td><code>invoiceType</code></td><td>string</td><td>yes</td><td><code>"Sale Invoice"</code> or <code>"Debit Note"</code></td></tr><tr><td><code>invoiceDate</code></td><td>string</td><td>yes</td><td><code>"yyyy-MM-dd"</code> — date only, no time, no timezone</td></tr><tr><td><code>sellerNTNCNIC</code></td><td>string</td><td>yes</td><td>7-digit NTN or 13-digit CNIC. Must match the token's owner</td></tr><tr><td><code>sellerBusinessName</code></td><td>string</td><td>yes</td><td>Exactly as FBR holds it</td></tr><tr><td><code>sellerProvince</code></td><td>string</td><td>yes</td><td>From the provinces lookup</td></tr><tr><td><code>sellerAddress</code></td><td>string</td><td>yes</td><td>Exactly as FBR holds it</td></tr><tr><td><code>buyerNTNCNIC</code></td><td>string</td><td>conditional</td><td>Required if registered; <strong>omit the key entirely</strong> if unregistered</td></tr><tr><td><code>buyerBusinessName</code></td><td>string</td><td>yes</td><td></td></tr><tr><td><code>buyerProvince</code></td><td>string</td><td>yes</td><td>From the provinces lookup</td></tr><tr><td><code>buyerAddress</code></td><td>string</td><td>yes</td><td></td></tr><tr><td><code>buyerRegistrationType</code></td><td>string</td><td>yes</td><td><code>"Registered"</code> or <code>"Unregistered"</code> — cross-checked against the buyer's real FBR profile</td></tr><tr><td><code>invoiceRefNo</code></td><td>string</td><td>conditional</td><td><strong>Debit Note only.</strong> The original FBR invoice number (22 chars for NTN, 28 for CNIC)</td></tr><tr><td><code>scenarioId</code></td><td>string</td><td>conditional</td><td><strong>Sandbox only.</strong> e.g. <code>"SN001"</code>. Must be absent in production</td></tr><tr><td><code>items</code></td><td>array</td><td>yes</td><td>At least one</td></tr></tbody></table></div>
+<h3>6.2 Item</h3>
+<div class="tablewrap"><table><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr></thead><tbody><tr><td><code>hsCode</code></td><td>string</td><td>yes</td><td>e.g. <code>"0101.2100"</code> — from the HS lookup</td></tr><tr><td><code>productDescription</code></td><td>string</td><td>yes</td><td></td></tr><tr><td><code>rate</code></td><td>string</td><td>yes</td><td>The <em>string</em> from the rate lookup: <code>"18%"</code>, <code>"1%"</code>, <code>"Exempt"</code>, <code>"Rs.3"</code>, <code>"18% along with rupees 60 per kilogram"</code></td></tr><tr><td><code>uoM</code></td><td>string</td><td>yes</td><td>From the UOM lookup, e.g. <code>"Numbers, pieces, units"</code></td></tr><tr><td><code>quantity</code></td><td>decimal</td><td>yes</td><td></td></tr><tr><td><code>valueSalesExcludingST</code></td><td>decimal</td><td>yes</td><td>Net of discount. <strong>Must be &gt; 0</strong>, even for 3rd Schedule / exempt items</td></tr><tr><td><code>fixedNotifiedValueOrRetailPrice</code></td><td>decimal</td><td>yes</td><td>Retail price for 3rd Schedule items; <code>0</code> otherwise</td></tr><tr><td><code>salesTaxApplicable</code></td><td>decimal</td><td>yes</td><td>Sales tax / FED-in-ST-mode. Excludes further &amp; extra tax</td></tr><tr><td><code>salesTaxWithheldAtSource</code></td><td>decimal</td><td>yes</td><td><code>0</code> when the buyer is not a withholding agent</td></tr><tr><td><code>extraTax</code></td><td>number <strong>or</strong> <code>""</code></td><td>yes in practice</td><td>See §7.2 — never <code>null</code>, never omitted</td></tr><tr><td><code>furtherTax</code></td><td>number <strong>or</strong> <code>""</code></td><td>yes in practice</td><td>See §7.2</td></tr><tr><td><code>fedPayable</code></td><td>decimal</td><td>optional</td><td></td></tr><tr><td><code>discount</code></td><td>decimal</td><td>optional</td><td></td></tr><tr><td><code>saleType</code></td><td>string</td><td>yes</td><td>From the transaction-type lookup — <strong>exact string</strong></td></tr><tr><td><code>sroScheduleNo</code></td><td>string</td><td>optional</td><td>Required for schedule-driven sale types</td></tr><tr><td><code>sroItemSerialNo</code></td><td>string</td><td>optional</td><td>Send only when <code>sroScheduleNo</code> is present</td></tr><tr><td><code>petroleumLevyOn</code></td><td>decimal</td><td>conditional</td><td><strong>Required for <code>saleType: "Petroleum Products"</code></strong> (PDL/CSL, added 2026). Omit for every other sale type</td></tr><tr><td><code>totalValues</code></td><td>decimal</td><td>yes</td><td>See the formula in §7.1</td></tr></tbody></table></div>
+<hr />
+<h2>7. Calculation rules</h2>
+<h3>7.1 The formula FBR validates against</h3>
+<p>Compute per item, round each money field to 2 decimals:</p>
+<pre class="code"><code>valueSalesExcludingST = (unitPrice × quantity) − discount
+fedPayable            = fixed  ? quantity × fedPerUnit
+                               : valueSalesExcludingST × fedRate / 100     (0 if FED not applicable)
+taxableValue          = valueSalesExcludingST + fedPayable
+salesTaxApplicable    = taxableValue × taxRate / 100
+extraTax              = buyerRegistered ? 0 : taxableValue × extraTaxRate   / 100
+furtherTax            = buyerRegistered ? 0 : taxableValue × furtherTaxRate / 100
+salesTaxWithheldAtSource = buyerIsWithholdingAgent ? salesTaxApplicable × whRate / 100 : 0
+
+totalValues = taxableValue + salesTaxApplicable + extraTax + furtherTax − salesTaxWithheldAtSource</code></pre>
+<p>Two traps:</p>
+<ul><li><strong>FED is inside the sales-tax base.</strong> Tax is charged on <code>valueSalesExcludingST + fedPayable</code>, not on the net value alone.</li><li><strong>Further tax and extra tax apply to unregistered buyers only.</strong> Driving them off <code>buyerRegistrationType</code> (not off a per-customer checkbox someone forgot to tick) keeps them correct.</li></ul>
+<p>For <strong>3rd Schedule</strong> items, <code>salesTaxApplicable</code> is computed on <code>fixedNotifiedValueOrRetailPrice</code>, not on <code>valueSalesExcludingST</code> — but <code>valueSalesExcludingST</code> must still be sent and must still be &gt; 0.</p>
+<h3>7.2 <code>extraTax</code> / <code>furtherTax</code> — the serialization trap</h3>
+<p>FBR wants these keys <strong>always present</strong>, but the accepted "no value" form depends on the sale type:</p>
+<div class="tablewrap"><table><thead><tr><th>Situation</th><th>Send</th></tr></thead><tbody><tr><td>Tax applies</td><td>the number, e.g. <code>120.00</code></td></tr><tr><td>Standard-rate sale, no extra/further tax</td><td><code>0</code> <strong>or</strong> <code>""</code> — both accepted</td></tr><tr><td>Reduced-rate / exempt / zero-rated sale types</td><td><code>""</code> — a numeric <code>0</code> is rejected with <code>[0091]</code></td></tr><tr><td>Any case</td><td><strong>never</strong> <code>null</code>, <strong>never</strong> omit the key — rejected with <code>[0300]</code></td></tr></tbody></table></div>
+<p>Most JSON serializers drop nulls or write <code>null</code>. You need an explicit converter that emits <code>""</code> for "not applicable". Verify by logging the exact outbound JSON string, not your object.</p>
+<h3>7.3 Other serialization rules</h3>
+<ul><li><code>invoiceDate</code> is a <strong>date string</strong>, not an ISO timestamp. <code>"2026-09-01"</code>, never <code>"2026-09-01T00:00:00Z"</code>.</li><li>Serialize with <strong>invariant culture</strong>. A machine with a European locale writing <code>1000,50</code> fails.</li><li>Omit optional keys that are <code>null</code>; do not send <code>"key": null</code>.</li><li>Strip <code>scenarioId</code> in production — sending it is a rejection.</li><li><code>buyerNTNCNIC</code> for an unregistered buyer: omit the key rather than sending <code>""</code>.</li></ul>
+<hr />
+<h2>8. Handling the response</h2>
+<h3>8.1 Success</h3>
+<pre class="code" data-lang="json"><code>{
+  "invoiceNumber": "7000007DI1747119701593",
+  "dated": "2025-05-13 12:01:41",
+  "validationResponse": {
+    "statusCode": "00",
+    "status": "Valid",
+    "error": "",
+    "invoiceStatuses": [
+      { "itemSNo": "1", "statusCode": "00", "status": "Valid",
+        "invoiceNo": "7000007DI1747119701593-1", "errorCode": "", "error": "" }
+    ]
+  }
+}</code></pre>
+<p><code>validateinvoicedata</code> returns the same shape <strong>without</strong> <code>invoiceNumber</code> — that is expected, not a bug.</p>
+<h3>8.2 The three failure modes you must all handle</h3>
+<p><strong>HTTP 200 does not mean accepted.</strong> Treat the invoice as accepted only when <em>all three</em> hold: <code>validationResponse.statusCode == "00"</code>, <code>status</code> equals <code>"Valid"</code> (case-insensitively), <strong>and</strong> every entry in <code>invoiceStatuses</code> has <code>statusCode == "00"</code>.</p>
+<ol><li><strong>Header-level rejection</strong> — <code>statusCode: "01"</code>, <code>invoiceStatuses: null</code>. e.g. bad HS code.</li><li><strong>Item-level rejection with a "00" header</strong> — the header says <code>"00"</code> while an item says <code>"01"</code>. A naive <code>if (statusCode == "00") success</code> marks a rejected invoice as filed. This is the most common integration bug in the wild.</li><li><strong>HTTP-level failure</strong> — <code>401</code> (token invalid/missing), <code>500</code> (FBR side), timeout, or a 2xx whose body is an HTML gateway page rather than JSON.</li></ol>
+<p>Aggregate every error into one message the user can act on: <code>[0046] Item #1: Provide rate.</code></p>
+<h3>8.3 Parse leniently</h3>
+<p>FBR's responses are not strictly spec-clean. Configure your JSON reader to allow trailing commas and to read a JSON <strong>number</strong> into a string field (<code>invoiceNo: 0</code> happens). A strict parser throws and you lose the real error message, reporting "invalid JSON" instead of "Provide rate."</p>
+<hr />
+<h2>9. Posting flow inside your application</h2>
+<pre class="code"><code>User saves a sale
+   └─ your app validates + saves it locally (status: NotSubmitted)
+         └─ build FBR payload from the saved record
+               └─ POST postinvoicedata
+                     ├─ Accepted  → store invoiceNumber + dated,
+                     │              set status Submitted, LOCK the record from edit/delete
+                     └─ Rejected  → store the error, leave status NotSubmitted, invoice stays editable</code></pre>
+<p>Non-negotiables:</p>
+<ul><li><strong>Never post inside your database transaction.</strong> Commit the sale first, then call FBR. A network timeout must not roll back a real sale — and it must not create a sale that FBR has accepted while your database has nothing.</li><li><strong>Idempotency: never auto-retry a timed-out post.</strong> FBR may have accepted it. Mark it "unknown" and let a human resolve it, or re-submit only after confirming with FBR. A blind retry produces a duplicate legal invoice that can only be undone with a Debit Note.</li><li><strong>Lock accepted invoices.</strong> No edit, no delete, no date change once <code>invoiceNumber</code> exists.</li><li><strong>Offer both an inline mode and a queue.</strong> Inline ("submit on save") is what most sellers want; a queued/manual "e-Invoice register" screen is what saves them when FBR is down. Build the register first: a list of sales with their FBR status, and Validate / Post buttons per row.</li><li><strong>Corrections go through a Debit Note</strong> — <code>invoiceType: "Debit Note"</code> with <code>invoiceRefNo</code> set to the original FBR invoice number.</li></ul>
+<hr />
+<h2>10. Error codes seen in practice</h2>
+<div class="tablewrap"><table><thead><tr><th>Code</th><th>Message</th><th>Cause / fix</th></tr></thead><tbody><tr><td><code>0046</code></td><td>Provide rate.</td><td><code>rate</code> missing or not a lookup string.</td></tr><tr><td><code>0052</code></td><td>Provide proper HS Code</td><td><code>hsCode</code> not in FBR's list, or wrong format.</td></tr><tr><td><code>0053</code></td><td>Registration type does not match buyer's profile</td><td><code>buyerRegistrationType</code> contradicts FBR's record for that NTN/CNIC. Dummy 13-digit CNICs (<code>10000000000xx</code>) must be <code>"Unregistered"</code>; <code>2046004</code> is the known <strong>Registered</strong> sandbox NTN. Use <code>Get_Reg_Type</code> to decide.</td></tr><tr><td><code>0091</code></td><td>—</td><td>A numeric <code>0</code> sent in <code>extraTax</code>/<code>furtherTax</code> for a reduced-rate sale type. Send <code>""</code>.</td></tr><tr><td><code>0129</code></td><td>Petroleum Levy On field cannot be empty or null</td><td><code>petroleumLevyOn</code> missing on a <code>"Petroleum Products"</code> item.</td></tr><tr><td><code>0203</code></td><td>Provided scenario does not exist</td><td>The <code>scenarioId</code> is not in <em>this seller's</em> assigned list in IRIS → Sandbox. Registration-side; not fixable in the payload.</td></tr><tr><td><code>0204</code></td><td>Sale type not match with provided scenario No.</td><td><code>saleType</code> string differs from FBR's registry. Note SN024's registry string is <code>Goods as per SRO.297(|)/2023</code> — a pipe character, not the letter I.</td></tr><tr><td><code>0300</code></td><td>Provided numeric values are invalid …</td><td>A required numeric is <code>null</code>/omitted, or <code>valueSalesExcludingST</code> is <code>0</code>. It must be &gt; 0 even for 3rd Schedule and exempt items.</td></tr><tr><td>HTTP 401</td><td>—</td><td>Wrong token, or a sandbox token on a production URL (or vice versa).</td></tr></tbody></table></div>
+<hr />
+<h2>11. Sandbox → production</h2>
+<ol><li>Configure the sandbox URL + sandbox token in your app.</li><li>Open <a class="xref" data-view="di-test" href="#di-test"><code>fbr-test-harness.html</code></a>, paste the token, run <strong>Validate All</strong> across your assigned scenarios. Fix payload bugs here — <code>validateinvoicedata</code> writes nothing.</li><li>Switch the harness to <strong>Post</strong> and run each assigned scenario against <code>postinvoicedata_sb</code> until every one returns <code>statusCode: "00"</code> / <code>"Valid"</code> with an <code>invoiceNumber</code>.</li><li>Repeat from <strong>your own application</strong>, not just the harness — the harness proves the payload, the app proves your mapping.</li><li>In IRIS → Digital Invoicing → Sandbox, confirm every assigned scenario shows as completed.</li><li>The <strong>Production</strong> tab unlocks. Generate the production token there. Copy it once.</li><li>In your app: set the production URL and token, turn the sandbox switch <strong>off</strong>, and confirm <code>scenarioId</code> is no longer being sent.</li><li>Post <strong>one real low-value invoice</strong> and verify it appears in IRIS before switching the seller over.</li></ol>
+<hr />
+<h2>12. Printing (mandatory)</h2>
+<p>Once accepted, the printed invoice must carry:</p>
+<ul><li>the <strong>FBR invoice number</strong>, and</li><li>a <strong>QR code encoding that number</strong> (1 inch × 1 inch is the accepted size), and</li><li>the <strong>FBR Digital Invoicing logo</strong>.</li></ul>
+<p>Generate the QR client-side from the stored <code>invoiceNumber</code> — do not fetch it from FBR. Render the block only when the invoice actually has an FBR number, so unsubmitted drafts do not print a fake mark.</p>
+<hr />
+<h2>13. Data your app must store</h2>
+<p>Per company/seller (settings, token encrypted): seller NTN/CNIC, business name, province, address; production URL + token; sandbox URL + token; sandbox on/off; default scenario id; "submit on save" on/off.</p>
+<p>Per invoice: <code>eInvoiceNumber</code> (FBR's), <code>eInvoiceDate</code> (FBR's <code>dated</code>), submission status, the channel used (DI vs POS), the last error text, and the exact JSON you sent. <strong>Keep the sent payload</strong> — when FBR disputes an invoice a year later, the payload is the only evidence of what you filed.</p>
+<p>Per product: HS code, UOM (FBR string), sale type, tax rate, SRO schedule no, SRO item serial no, FED applicability + rate/type, fixed notified value. Per customer: NTN/CNIC, business name, province, address, registered/unregistered, withholding-agent flag + rate, further-tax rate, extra-tax rate.</p>
+<hr />
+<h2>14. Go-live checklist</h2>
+<ul><li class="task"><input type="checkbox" /> Seller NTN active; business activity and province correct in IRIS</li><li class="task"><input type="checkbox" /> Sandbox token generated and stored server-side (encrypted)</li><li class="task"><input type="checkbox" /> Lookup lists cached locally and selectable in the UI (HS, UOM, sale type, rate, SRO, province)</li><li class="task"><input type="checkbox" /> Products and customers carry every FBR field listed in §13</li><li class="task"><input type="checkbox" /> Payload verified as a raw string: date format, invariant numbers, <code>extraTax</code>/<code>furtherTax</code> shape</li><li class="task"><input type="checkbox" /> All FBR-assigned scenarios pass <code>validateinvoicedata_sb</code> <strong>and</strong> <code>postinvoicedata_sb</code></li><li class="task"><input type="checkbox" /> Response handler treats item-level <code>"01"</code> under a header <code>"00"</code> as a rejection</li><li class="task"><input type="checkbox" /> FBR call is outside the DB transaction; timeouts are never auto-retried</li><li class="task"><input type="checkbox" /> Accepted invoices are locked from edit/delete</li><li class="task"><input type="checkbox" /> Debit Note path implemented with <code>invoiceRefNo</code></li><li class="task"><input type="checkbox" /> QR + FBR number + logo print on accepted invoices only</li><li class="task"><input type="checkbox" /> Production token stored; sandbox switch off; <code>scenarioId</code> not sent</li><li class="task"><input type="checkbox" /> One real invoice posted and verified in IRIS</li></ul></article>
+    </div>
+  </section>
+
+  <!-- ======================= POS GUIDE ====================== -->
+  <section id="view-pos-guide" class="view">
+    <div class="doclayout">
+      <aside class="toc"></aside>
+      <article class="doc"><h1>FBR POS Digital Invoicing — Developer Integration Guide</h1>
+<p><strong>Audience:</strong> a developer integrating FBR POS Digital Invoicing into an application from scratch. <strong>Scope:</strong> terminal registration → sandbox token → sandbox verification → production token → live posting → printing. <strong>Companion files:</strong> <a class="xref" data-view="di-test" href="#di-test"><code>fbr-test-harness.html</code></a> (browser test runner), <code>fbr-proxy.js</code> (CORS relay). <strong>Reference spec:</strong> <code>../Technical-Specification-POS-Digital-Invoicing.md</code></p>
+<hr />
+<h2>1. What POS DI is</h2>
+<p>POS Digital Invoicing is FBR's <strong>retail till reporting</strong> channel. Every receipt a registered Tier-1 retail outlet prints is POSTed to FBR at the moment of sale. FBR returns a <strong>tracking number</strong> (e.g. <code>900005CLNP5914173522</code>) which, with a QR code, must be printed on the customer's receipt so the customer can verify it (the "Tax Asaan" verification the FBR prize scheme runs on).</p>
+<p>The unit of registration is the <strong>terminal</strong>, not the invoice. Each till/counter is registered separately and gets its own <strong>BPOS ID</strong>, which is sent in every payload from that till.</p>
+<hr />
+<h2>2. POS vs Digital Invoicing (DI) — read this before choosing</h2>
+<p>They are <strong>two different APIs with two different payloads, two different tokens and two different onboarding paths.</strong> They are not versions of each other.</p>
+<div class="tablewrap"><table><thead><tr><th></th><th><strong>POS Digital Invoicing</strong></th><th><strong>Digital Invoicing (DI)</strong></th></tr></thead><tbody><tr><td>Purpose</td><td>Retail receipt reporting (SRO 1006)</td><td>Legal sales-tax invoice register</td></tr><tr><td>Typical user</td><td>Tier-1 retailer, restaurant, outlet counter</td><td>Manufacturer, importer, distributor, wholesaler</td></tr><tr><td>Registers</td><td>The <strong>terminal</strong> (BPOS ID per till)</td><td>The <strong>invoice</strong></td></tr><tr><td>Endpoint family</td><td><code>.../pdi/v1/api/DigitalInvoicing/PostInvoiceData_v1</code></td><td><code>.../di_data/v1/di/postinvoicedata</code></td></tr><tr><td>Field style</td><td><strong>Numeric codes</strong> — <code>uoM: 5</code>, <code>saleType: 1</code>, <code>rate: 18</code></td><td><strong>Descriptive strings</strong> — <code>"Numbers, pieces, units"</code>, <code>"18%"</code></td></tr><tr><td><code>invoiceType</code></td><td><code>1</code> Purchase, <code>2</code> Sale, <code>3</code> Debit Note, <code>4</code> Credit Note</td><td><code>"Sale Invoice"</code> / <code>"Debit Note"</code></td></tr><tr><td>Success signal</td><td><code>statusCode: 200</code> (a <strong>number</strong>) + <code>result</code> = tracking number</td><td><code>validationResponse.statusCode: "00"</code> (a <strong>string</strong>) + <code>invoiceNumber</code></td></tr><tr><td>Per-item validation</td><td>No — one verdict for the whole invoice</td><td>Yes — per-item statuses</td></tr><tr><td>Dry-run endpoint</td><td><strong>None. Every call is live.</strong></td><td><code>validateinvoicedata</code></td></tr><tr><td>Test scenarios</td><td>None</td><td><code>scenarioId</code> SN001–SN028, assigned per seller</td></tr><tr><td>Header totals</td><td>Required (<code>totalSalesTaxApplicable</code>, <code>totalRetailPrice</code>, …)</td><td>Not sent — FBR derives them</td></tr></tbody></table></div>
+<p><strong>The consequence that catches people:</strong> POS has no validate endpoint, so you cannot rehearse a payload without creating a record. Test against the <strong>sandbox URL</strong> only, and treat every production call as final.</p>
+<p>A business can be required to run both channels. If so, keep two independent settings blocks and two tokens, and make the cashier (or a rule) pick exactly one channel per sale. Never post one sale to both.</p>
+<hr />
+<h2>3. Prerequisites (business side)</h2>
+<ol><li>Active <strong>NTN / STRN</strong>, sales-tax registered.</li><li><strong>IRIS login</strong> for that NTN (<code>https://iris.fbr.gov.pk</code>).</li><li>The outlet is <strong>declared in IRIS</strong> — POS registration is per business premises. Every branch must exist as a business address on the profile before its tills can be registered.</li><li>The seller understands that a registered terminal is a <strong>monitored</strong> terminal: FBR expects continuous posting from it once it is live.</li></ol>
+<hr />
+<h2>4. Registering the terminal and getting the SANDBOX token</h2>
+<ol><li>Log in to <strong><code>https://iris.fbr.gov.pk</code></strong> (the older <code>e.fbr.gov.pk</code> portal redirects here).</li><li>Go to <strong>Registration → POS Registration</strong> (also surfaced as <em>Integration → POS</em>).</li><li><strong>Register each terminal</strong>: select the branch/business premises, give the till a name, submit. FBR issues a <strong>POS ID / BPOS ID</strong> per terminal. Record which physical counter each ID belongs to — your app needs to send the right one per till.</li><li>Pay the annual per-terminal registration fee if IRIS prompts for it; the terminal is not active until it is paid.</li><li>In the <strong>Integration / Digital Invoicing</strong> section, request the <strong>security token</strong>. FBR issues one token for the taxpayer (not one per till); the BPOS ID in the payload identifies the terminal. <strong>The token is displayed once — copy it immediately.</strong></li><li>Store the token server-side, encrypted. Never ship it to a browser, a till app binary, or git.</li></ol>
+<p>For a first smoke test before the seller's own token arrives, FBR's spec publishes the shared sandbox token <code>07eabd29-fb34-3a2a-ab73-1ff4eb282aef</code>. Use it to prove your payload shape only — never for anything you intend to keep.</p>
+<hr />
+<h2>5. Endpoints and authentication</h2>
+<div class="tablewrap"><table><thead><tr><th>Environment</th><th>URL</th></tr></thead><tbody><tr><td>Sandbox (testing)</td><td><code>https://esp.fbr.gov.pk:8244/DigitalInvoicing/v1/PostInvoiceData_v1</code></td></tr><tr><td>Production (live)</td><td><code>https://gw.fbr.gov.pk/pdi/v1/api/DigitalInvoicing/PostInvoiceData_v1</code></td></tr></tbody></table></div>
+<p>Unlike DI, the sandbox is a <strong>different host</strong>, not a URL suffix. Keep both as configuration.</p>
+<pre class="code"><code>POST &lt;url&gt;
+Authorization: Bearer &lt;token&gt;
+Content-Type: application/json</code></pre>
+<h3>5.1 Code lists</h3>
+<p>POS fields are <strong>numeric codes</strong>, and FBR publishes the lists (HS Code, UoM, Sale Type, SRO/Schedule, Rate) on the FBR website / with the spec rather than as a live API. Import them into your own tables and expose them as dropdowns on the product master. Never let a cashier type a UoM or sale-type code.</p>
+<p>Getting a code wrong here is worse than in DI: POS validates loosely at the API boundary, so a wrong <code>saleType</code> or <code>uoM</code> is <em>accepted</em> and becomes a wrong filing that surfaces months later in the seller's return. Verify your codes in the sandbox against a known-good sale before go-live.</p>
+<hr />
+<h2>6. The payload</h2>
+<p>One header carrying <strong>document totals</strong>, plus an <code>invoiceItemDetails</code> array. Field casing is exact — note the unusual <code>ntN_CNIC</code>, <code>distributor_NTN_CNIC</code>, <code>whiT_1</code>.</p>
+<h3>6.1 Header</h3>
+<div class="tablewrap"><table><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr></thead><tbody><tr><td><code>bposId</code></td><td>string</td><td>yes</td><td>The registered terminal ID for this till</td></tr><tr><td><code>invoiceType</code></td><td>string</td><td>yes</td><td><code>"1"</code> Purchase, <code>"2"</code> Sale, <code>"3"</code> Debit Note, <code>"4"</code> Credit Note</td></tr><tr><td><code>invoiceDate</code></td><td>string</td><td>yes</td><td><code>"yyyy-MM-dd"</code></td></tr><tr><td><code>ntN_CNIC</code></td><td>string</td><td>yes</td><td>The <strong>counterparty</strong>: on a sale, the buyer's NTN/CNIC. Open text — not validated live</td></tr><tr><td><code>buyerSellerName</code></td><td>string</td><td>yes</td><td>Counterparty name</td></tr><tr><td><code>destinationAddress</code></td><td>string</td><td>yes</td><td></td></tr><tr><td><code>saleType</code></td><td>number</td><td>yes</td><td>Code from FBR's Sale Type list</td></tr><tr><td><code>distributor_NTN_CNIC</code></td><td>string</td><td>yes in practice</td><td><strong>The seller</strong> (your taxpayer)</td></tr><tr><td><code>distributorName</code></td><td>string</td><td>yes in practice</td><td>Seller's registered name</td></tr><tr><td><code>totalSalesTaxApplicable</code></td><td>decimal</td><td>optional</td><td>Sum over items</td></tr><tr><td><code>totalRetailPrice</code></td><td>decimal</td><td>yes</td><td>Sum over items</td></tr><tr><td><code>totalSTWithheldAtSource</code></td><td>decimal</td><td>optional</td><td>Sum over items</td></tr><tr><td><code>totalExtraTax</code></td><td>decimal</td><td>optional</td><td>Sum over items</td></tr><tr><td><code>totalFEDPayable</code></td><td>decimal</td><td>optional</td><td>Sum over items</td></tr><tr><td><code>totalWithheldIncomeTax</code></td><td>decimal</td><td>optional</td><td>Sum of <code>whiT_1 + whiT_2</code></td></tr><tr><td><code>totalCVT</code></td><td>decimal</td><td>optional</td><td>Sum over items</td></tr><tr><td><code>invoiceItemDetails</code></td><td>array</td><td>yes</td><td>At least one</td></tr></tbody></table></div>
+<p><strong>The header totals must equal the sum of the item lines.</strong> Compute them from the mapped item array you are about to send — never from your own screen totals, which may round differently.</p>
+<h3>6.2 Item (<code>invoiceItemDetails[]</code>)</h3>
+<div class="tablewrap"><table><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr></thead><tbody><tr><td><code>hsCode</code></td><td>string</td><td>yes</td><td>8 characters, from the HS list</td></tr><tr><td><code>productCode</code></td><td>string</td><td>yes</td><td>Your own SKU — open text</td></tr><tr><td><code>productDescription</code></td><td>string</td><td>yes</td><td></td></tr><tr><td><code>rate</code></td><td>decimal</td><td>yes</td><td>A <strong>number</strong> (<code>18</code>), not <code>"18%"</code></td></tr><tr><td><code>uoM</code></td><td>number</td><td>yes</td><td>Code from the UoM list</td></tr><tr><td><code>quantity</code></td><td>decimal</td><td>yes</td><td></td></tr><tr><td><code>valueSalesExcludingST</code></td><td>decimal</td><td>yes</td><td>2 dp</td></tr><tr><td><code>salesTaxApplicable</code></td><td>decimal</td><td>yes</td><td>2 dp</td></tr><tr><td><code>retailPrice</code></td><td>decimal</td><td>yes</td><td>Retail / fixed notified value</td></tr><tr><td><code>stWithheldAtSource</code></td><td>decimal</td><td>optional</td><td></td></tr><tr><td><code>extraTax</code></td><td>decimal</td><td>optional</td><td>Plain number — POS has none of DI's <code>""</code> quirk</td></tr><tr><td><code>furtherTax</code></td><td>decimal</td><td>optional</td><td></td></tr><tr><td><code>sroScheduleNo</code></td><td>number</td><td>optional</td><td>Numeric code</td></tr><tr><td><code>fedPayable</code></td><td>decimal</td><td>optional</td><td></td></tr><tr><td><code>cvt</code></td><td>decimal</td><td>yes</td><td><code>0</code> when not applicable</td></tr><tr><td><code>whiT_1</code>, <code>whiT_2</code></td><td>decimal</td><td>optional</td><td>Withholding income tax</td></tr><tr><td><code>whiT_Section_1</code>, <code>whiT_Section_2</code></td><td>string</td><td>optional</td><td>Send <code>""</code> when not applicable</td></tr><tr><td><code>totalValues</code></td><td>decimal</td><td>yes</td><td>Item total including tax</td></tr></tbody></table></div>
+<h3>6.3 Worked example</h3>
+<pre class="code" data-lang="json"><code>{
+  "bposId": "05",
+  "invoiceType": "2",
+  "invoiceDate": "2026-09-01",
+  "ntN_CNIC": "3520212345671",
+  "buyerSellerName": "Walk-in Customer",
+  "destinationAddress": "Lahore",
+  "saleType": 1,
+  "distributor_NTN_CNIC": "8885801",
+  "distributorName": "Demo Traders (Pvt) Ltd",
+  "totalSalesTaxApplicable": 180.00,
+  "totalRetailPrice": 0.00,
+  "totalSTWithheldAtSource": 0.00,
+  "totalExtraTax": 0.00,
+  "totalFEDPayable": 0.00,
+  "totalWithheldIncomeTax": 0.00,
+  "totalCVT": 0.00,
+  "invoiceItemDetails": [
+    {
+      "hsCode": "0101.2100",
+      "productCode": "SKU-001",
+      "productDescription": "Demo product",
+      "rate": 18,
+      "uoM": 5,
+      "quantity": 1,
+      "valueSalesExcludingST": 1000.00,
+      "salesTaxApplicable": 180.00,
+      "retailPrice": 0.00,
+      "stWithheldAtSource": 0.00,
+      "extraTax": 0.00,
+      "furtherTax": 0.00,
+      "sroScheduleNo": 0,
+      "fedPayable": 0.00,
+      "cvt": 0.00,
+      "whiT_1": 0.00,
+      "whiT_2": 0.00,
+      "whiT_Section_1": "",
+      "whiT_Section_2": "",
+      "totalValues": 1180.00
+    }
+  ]
+}</code></pre>
+<hr />
+<h2>7. Calculation rules</h2>
+<p>Per item, rounded to 2 decimals:</p>
+<pre class="code"><code>valueSalesExcludingST = (unitPrice × quantity) − discount
+fedPayable            = fixed ? quantity × fedPerUnit
+                              : valueSalesExcludingST × fedRate / 100      (0 if not applicable)
+taxableValue          = valueSalesExcludingST + fedPayable
+salesTaxApplicable    = taxableValue × rate / 100
+extraTax              = buyerRegistered ? 0 : taxableValue × extraTaxRate   / 100
+furtherTax            = buyerRegistered ? 0 : taxableValue × furtherTaxRate / 100
+stWithheldAtSource    = buyerIsWithholdingAgent ? salesTaxApplicable × whRate / 100 : 0
+
+totalValues = taxableValue + salesTaxApplicable + extraTax + furtherTax − stWithheldAtSource</code></pre>
+<p>Then set each header <code>total*</code> to the sum of the corresponding item column. As in DI, FED sits <strong>inside</strong> the sales-tax base, and further/extra tax apply to unregistered buyers only.</p>
+<hr />
+<h2>8. Handling the response</h2>
+<h3>8.1 Success</h3>
+<pre class="code" data-lang="json"><code>{
+  "$id": "1",
+  "version": "1.0",
+  "statusCode": 200,
+  "errorMessage": "",
+  "result": "900005CLNP5914173522",
+  "timestamp": "2023-12-20T16:59:15.4831026+05:00",
+  "errors": { "$id": "2", "$values": [] }
+}</code></pre>
+<p><code>result</code> is the <strong>tracking number</strong>. It is the whole point of the call — store it and print it.</p>
+<h3>8.2 The checks you must implement</h3>
+<p>Treat the sale as filed only when <strong>all three</strong> hold:</p>
+<ol><li>HTTP status is 2xx, <strong>and</strong></li><li>the body's <code>statusCode</code> is <code>200</code> (a JSON <strong>number</strong>, not the string <code>"00"</code> DI uses), <strong>and</strong></li><li><code>result</code> is non-empty.</li></ol>
+<p>FBR can return <strong>HTTP 200 with a body <code>statusCode</code> other than 200</strong> and an <code>errorMessage</code>. A handler that only checks the HTTP status will record failed sales as filed.</p>
+<p>Also handle: <code>401</code> (token invalid or missing), <code>500</code> (FBR side), timeout, and a 2xx whose body is an HTML gateway page rather than JSON — surface the first 500 characters of the body so the real cause is visible instead of "invalid JSON".</p>
+<p>Parse leniently (allow trailing commas; read a JSON number into a string field) — POS replies are not strictly spec-clean either.</p>
+<hr />
+<h2>9. Posting flow inside your application</h2>
+<pre class="code"><code>Cashier saves the sale
+   └─ app saves it locally (status: NotSubmitted)
+         └─ build POS payload (right bposId for this till)
+               └─ POST PostInvoiceData_v1
+                     ├─ statusCode 200 + result → store tracking number, LOCK the sale, print receipt
+                     └─ anything else           → store errorMessage, sale stays editable, retry from the register</code></pre>
+<p>Non-negotiables:</p>
+<ul><li><strong>There is no validate endpoint.</strong> Every call writes. Rehearse on the sandbox host only.</li><li><strong>Post outside the DB transaction.</strong> Commit the sale first, then call FBR.</li><li><strong>Never auto-retry a timeout</strong> — FBR may have recorded it. Mark it "unknown" and resolve manually; a blind retry double-files the sale, and the only fix is a Credit Note (<code>invoiceType: 4</code>).</li><li><strong>Lock a sale once it has a tracking number.</strong></li><li><strong>Build an e-invoice register screen</strong> — a list of sales with their POS status and a manual Post button — before you build "submit on save". Tills lose connectivity; the register is how the day gets reconciled.</li><li><strong>Map each till to its own BPOS ID.</strong> One hard-coded BPOS ID across a multi-counter shop files every counter's sales against one terminal.</li><li><strong>Returns</strong> go as <code>invoiceType: "4"</code> (Credit Note).</li></ul>
+<hr />
+<h2>10. Sandbox → production</h2>
+<ol><li>Configure the sandbox URL + token in your app.</li><li>Open <a class="xref" data-view="di-test" href="#di-test"><code>fbr-test-harness.html</code></a>, switch to <strong>POS</strong>, paste the token and BPOS ID, and post the sample payload. Confirm you get <code>statusCode: 200</code> and a <code>result</code> tracking number.</li><li>Cover your real cases against the sandbox host: standard-rate sale, an exempt/zero-rated item, a multi-item receipt, a discounted line, a return (<code>invoiceType: 4</code>), and an unregistered buyer. Check each returned tracking number is stored and printed.</li><li>Verify your <strong>code mappings</strong>: run one sale per distinct UoM and sale type your catalogue uses, and confirm the codes match FBR's published lists. The API will not catch a wrong-but-valid code.</li><li>Confirm in IRIS that the terminal is registered, the fee is paid, and the terminal is active.</li><li>Switch the app to the production URL + production token, sandbox switch <strong>off</strong>.</li><li>Post <strong>one real low-value sale</strong>, verify the tracking number scans in FBR's verification app, then roll out to the remaining tills.</li></ol>
+<hr />
+<h2>11. Printing (mandatory)</h2>
+<p>The receipt must carry:</p>
+<ul><li>the <strong>tracking number</strong> returned in <code>result</code>, and</li><li>a <strong>QR code encoding that tracking number</strong> (1 inch × 1 inch), and</li><li>the <strong>FBR POS logo</strong>.</li></ul>
+<p>Generate the QR locally from the stored tracking number. Print the block only when a tracking number exists, so an unfiled receipt never carries a fake FBR mark. On thermal roll paper, place the QR and number at the foot of the receipt above the footer text and check it scans at your printer's actual DPI.</p>
+<hr />
+<h2>12. Data your app must store</h2>
+<p>Per company/seller (token encrypted): seller NTN/CNIC, business name; production URL + token; sandbox URL + token; sandbox on/off; "submit on save" on/off. Per till/location: the <strong>BPOS ID</strong>. Per sale: tracking number, submission timestamp, the channel used (POS vs DI), the last error text, and the exact JSON you sent. Per product: HS code, UoM code, sale type code, rate, SRO schedule code, FED applicability + rate/type, retail/fixed notified price. Per customer: NTN/CNIC, name, address, registered/unregistered, withholding-agent flag + rate.</p>
+<hr />
+<h2>13. Go-live checklist</h2>
+<ul><li class="task"><input type="checkbox" /> Every terminal registered in IRIS; BPOS ID recorded per physical till; fee paid</li><li class="task"><input type="checkbox" /> Sandbox token stored server-side (encrypted); production token obtained separately</li><li class="task"><input type="checkbox" /> FBR code lists (HS, UoM, sale type, SRO, rate) imported and selectable in the UI</li><li class="task"><input type="checkbox" /> Header <code>total*</code> fields computed from the mapped item array, not from screen totals</li><li class="task"><input type="checkbox" /> Success check requires HTTP 2xx <strong>and</strong> body <code>statusCode == 200</code> <strong>and</strong> non-empty <code>result</code></li><li class="task"><input type="checkbox" /> Non-JSON / HTML gateway responses surfaced with their raw body</li><li class="task"><input type="checkbox" /> FBR call is outside the DB transaction; timeouts are never auto-retried</li><li class="task"><input type="checkbox" /> Sales with a tracking number are locked from edit/delete</li><li class="task"><input type="checkbox" /> Return path posts <code>invoiceType: 4</code></li><li class="task"><input type="checkbox" /> E-invoice register screen with a manual Post/retry per sale</li><li class="task"><input type="checkbox" /> Tracking number + QR + FBR logo print, and the QR scans on the real printer</li><li class="task"><input type="checkbox" /> Production URL + token set, sandbox switch off, one real sale verified</li></ul></article>
+    </div>
+  </section>
+
+  <!-- ======================= SCENARIOS ====================== -->
+  <section id="view-scenarios" class="view">
+    <div class="doclayout">
+      <aside class="toc"></aside>
+      <article class="doc"><h1>FBR Digital Invoicing — Sandbox Case Scenarios (SN001–SN028)</h1>
+<p><strong>Applies to Digital Invoicing only.</strong> FBR POS has no scenario concept — see <a class="xref" data-view="pos-guide" href="#pos-guide"><code>fbr-pos-digital-invoice-developer-guide.md</code></a>.</p>
+<p><strong>Payloads:</strong> <code>fbr-di-sandbox-scenarios.json</code> — 28 complete, known-good request bodies. <strong>Runner:</strong> <a class="xref" data-view="di-test" href="#di-test"><code>fbr-test-harness.html</code></a> — load a scenario, apply your seller identity, post or validate it.</p>
+<hr />
+<h2>1. What a scenario is, and why it gates your go-live</h2>
+<p>In the DI sandbox, <code>scenarioId</code> in the header tells FBR <strong>which business situation you are claiming to model</strong> (<code>"SN001"</code> … <code>"SN028"</code>). FBR then validates the payload against that situation's rules — the <code>saleType</code>, the <code>rate</code>, the SRO references and the buyer registration type must all be internally consistent with the scenario, not just individually well-formed.</p>
+<p><strong>FBR assigns each seller a subset of these scenarios</strong>, derived from the business activity/sector on their IRIS profile. Find the assigned list in <strong>IRIS → Digital Invoicing → Sandbox</strong>. You must post every assigned scenario successfully before the Production token is issued. Posting the other scenarios is neither required nor harmful — but a scenario outside your assigned list is rejected with <code>[0203] Provided scenario does not exists</code>.</p>
+<p><strong><code>scenarioId</code> is a sandbox-only field.</strong> Sending it to a production endpoint is a rejection. Strip it by environment, not by hand.</p>
+<hr />
+<h2>2. The 28 scenarios</h2>
+<p>Each row shows the discriminating fields — the ones that must match, and the ones that break the payload if you copy them from another scenario.</p>
+<div class="tablewrap"><table><thead><tr><th>ID</th><th>Situation</th><th><code>saleType</code></th><th><code>rate</code></th><th>Buyer</th><th>SRO schedule / item serial</th></tr></thead><tbody><tr><td><code>SN001</code></td><td>Sale of Standard Rate Goods to Registered Buyers</td><td><code>Goods at standard rate (default)</code></td><td><code>18%</code></td><td>Registered</td><td>—</td></tr><tr><td><code>SN002</code></td><td>Sale of Standard Rate Goods to Unregistered Buyers</td><td><code>Goods at standard rate (default)</code></td><td><code>18%</code></td><td>Unregistered</td><td>—</td></tr><tr><td><code>SN003</code></td><td>Sale of Steel (Melted and Re-Rolled) (Billets, Ingots and Long Bars)</td><td><code>Steel melting and re-rolling</code></td><td><code>18%</code></td><td>Unregistered</td><td>—</td></tr><tr><td><code>SN004</code></td><td>Sale of Steel Scrap by Ship Breakers</td><td><code>Ship breaking</code></td><td><code>18%</code></td><td>Unregistered</td><td>—</td></tr><tr><td><code>SN005</code></td><td>Sales of Reduced Rate Goods (Eighth Schedule)</td><td><code>Goods at Reduced Rate</code></td><td><code>1%</code></td><td>Unregistered</td><td>EIGHTH SCHEDULE Table 1 / 82</td></tr><tr><td><code>SN006</code></td><td>Sale of Exempt Goods (Sixth Schedule)</td><td><code>Exempt goods</code></td><td><code>Exempt</code></td><td>Unregistered</td><td>6th Schd Table I / 100</td></tr><tr><td><code>SN007</code></td><td>Sale of Zero-Rated Goods (Fifth Schedule)</td><td><code>Goods at zero-rate</code></td><td><code>0%</code></td><td>Unregistered</td><td>327(I)/2008 / 1</td></tr><tr><td><code>SN008</code></td><td>Sale of 3rd Schedule Goods</td><td><code>3rd Schedule Goods</code></td><td><code>18%</code></td><td>Unregistered</td><td>—</td></tr><tr><td><code>SN009</code></td><td>Purchase from Registered Cotton Ginners</td><td><code>Cotton ginners</code></td><td><code>18%</code></td><td>Registered</td><td>—</td></tr><tr><td><code>SN010</code></td><td>Sale of Telecom Services by Mobile Operators</td><td><code>Telecommunication services</code></td><td><code>17%</code></td><td>Unregistered</td><td>—</td></tr><tr><td><code>SN011</code></td><td>Sale of Steel through Toll Manufacturing (Billets, Ingots and Long Bars)</td><td><code>Toll Manufacturing</code></td><td><code>18%</code></td><td>Unregistered</td><td>—</td></tr><tr><td><code>SN012</code></td><td>Sale of Petroleum Products</td><td><code>Petroleum Products</code></td><td><code>1.43%</code></td><td>Unregistered</td><td>1450(I)/2021 / 4</td></tr><tr><td><code>SN013</code></td><td>Sale of Electricity to Retailers</td><td><code>Electricity Supply to Retailers</code></td><td><code>5%</code></td><td>Unregistered</td><td>1450(I)/2021 / 4</td></tr><tr><td><code>SN014</code></td><td>Sale of Gas to CNG Stations</td><td><code>Gas to CNG stations</code></td><td><code>18%</code></td><td>Unregistered</td><td>—</td></tr><tr><td><code>SN015</code></td><td>Sale of Mobile Phones</td><td><code>Mobile Phones</code></td><td><code>18%</code></td><td>Unregistered</td><td>NINTH SCHEDULE / 1(A)</td></tr><tr><td><code>SN016</code></td><td>Processing / Conversion of Goods</td><td><code>Processing/Conversion of Goods</code></td><td><code>5%</code></td><td>Unregistered</td><td>—</td></tr><tr><td><code>SN017</code></td><td>Sale of Goods Where FED Is Charged in ST Mode</td><td><code>Goods (FED in ST Mode)</code></td><td><code>8%</code></td><td>Unregistered</td><td>—</td></tr><tr><td><code>SN018</code></td><td>Sale of Services Where FED Is Charged in ST Mode</td><td><code>Services (FED in ST Mode)</code></td><td><code>8%</code></td><td>Unregistered</td><td>—</td></tr><tr><td><code>SN019</code></td><td>Sale of Services (as per ICT Ordinance)</td><td><code>Services</code></td><td><code>5%</code></td><td>Unregistered</td><td>ICTO TABLE I / 1(ii)(ii)(a)</td></tr><tr><td><code>SN020</code></td><td>Sale of Electric Vehicles</td><td><code>Electric Vehicle</code></td><td><code>1%</code></td><td>Unregistered</td><td>6th Schd Table III / 20</td></tr><tr><td><code>SN021</code></td><td>Sale of Cement / Concrete Block</td><td><code>Cement /Concrete Block</code></td><td><code>Rs.3</code></td><td>Unregistered</td><td>—</td></tr><tr><td><code>SN022</code></td><td>Sale of Potassium Chlorate</td><td><code>Potassium Chlorate</code></td><td><code>18% along with rupees 60 per kilogram</code></td><td>Unregistered</td><td>EIGHTH SCHEDULE Table 1 / 56</td></tr><tr><td><code>SN023</code></td><td>Sale of CNG</td><td><code>CNG Sales</code></td><td><code>Rs.200</code></td><td>Unregistered</td><td>581(1)/2024 / Region-I</td></tr><tr><td><code>SN024</code></td><td>Sale of Goods Listed in SRO 297(I)/2023</td><td><code>Goods as per SRO.297(|)/2023</code></td><td><code>25%</code></td><td>Unregistered</td><td>297(I)/2023-Table-I / 12</td></tr><tr><td><code>SN025</code></td><td>Drugs Sold at Fixed ST Rate (Serial 81, Eighth Schedule Table 1)</td><td><code>Non-Adjustable Supplies</code></td><td><code>0%</code></td><td>Unregistered</td><td>EIGHTH SCHEDULE Table 1 / 81</td></tr><tr><td><code>SN026</code></td><td>Sale of Goods at Standard Rate to End Consumers by Retailers</td><td><code>Goods at standard rate (default)</code></td><td><code>18%</code></td><td>Unregistered</td><td>—</td></tr><tr><td><code>SN027</code></td><td>Sale of 3rd Schedule Goods to End Consumers by Retailers</td><td><code>3rd Schedule Goods</code></td><td><code>18%</code></td><td>Unregistered</td><td>—</td></tr><tr><td><code>SN028</code></td><td>Sale of Goods at Reduced Rate to End Consumers by Retailers</td><td><code>Goods at Reduced Rate</code></td><td><code>1%</code></td><td>Unregistered</td><td>EIGHTH SCHEDULE Table 1 / 70</td></tr></tbody></table></div>
+<p><strong>Reading the table:</strong> <code>saleType</code> and <code>rate</code> are the two fields that must agree with the scenario. Take them verbatim from the JSON file — including odd spellings, spacing, and the pipe character in SN024's <code>Goods as per SRO.297(|)/2023</code>. They are FBR registry strings, not free text.</p>
+<hr />
+<h2>3. Scenario groups, and what each teaches your code</h2>
+<div class="tablewrap"><table><thead><tr><th>Group</th><th>Scenarios</th><th>What it exercises in your implementation</th></tr></thead><tbody><tr><td><strong>Standard rate</strong></td><td>SN001, SN002, SN026</td><td>The baseline path, and the registered-vs-unregistered split that drives further tax / extra tax.</td></tr><tr><td><strong>Sector-specific sale types</strong></td><td>SN003, SN004, SN009, SN011, SN014, SN016</td><td>That <code>saleType</code> is data on your product master, not a constant. Steel, ship breaking, cotton ginners, toll manufacturing, CNG stations, processing/conversion.</td></tr><tr><td><strong>Reduced rate &amp; schedules</strong></td><td>SN005, SN028</td><td>SRO plumbing: <code>sroScheduleNo</code> + <code>sroItemSerialNo</code>, and the <code>extraTax</code>/<code>furtherTax</code> <code>""</code> rule (a numeric <code>0</code> is rejected with <code>[0091]</code>).</td></tr><tr><td><strong>Exempt / zero-rated</strong></td><td>SN006, SN007, SN025</td><td>A <code>rate</code> that is not a percentage (<code>"Exempt"</code>, <code>"0%"</code>) with a non-zero <code>valueSalesExcludingST</code>.</td></tr><tr><td><strong>3rd Schedule (retail price)</strong></td><td>SN008, SN027</td><td>Tax computed on <code>fixedNotifiedValueOrRetailPrice</code> while <code>valueSalesExcludingST</code> must still be &gt; 0 (<code>[0300]</code> otherwise).</td></tr><tr><td><strong>Services</strong></td><td>SN010, SN018, SN019</td><td>Service sale types and the ICT Ordinance SRO wording.</td></tr><tr><td><strong>FED in ST mode</strong></td><td>SN017, SN018</td><td><code>fedPayable</code> inside the sales-tax base — the calculation trap in §7.1 of the DI guide.</td></tr><tr><td><strong>Fixed-amount rates</strong></td><td>SN021, SN023</td><td><code>rate</code> values like <code>"Rs.3"</code> and <code>"Rs.200"</code> — proof that <code>rate</code> is a lookup <strong>string</strong>, not a number your code multiplies by.</td></tr><tr><td><strong>Compound rates</strong></td><td>SN022</td><td><code>"18% along with rupees 60 per kilogram"</code> — percentage plus per-unit in one rate.</td></tr><tr><td><strong>Petroleum</strong></td><td>SN012</td><td>The 2026 <code>petroleumLevyOn</code> field. Omitted → <code>[0129]</code>.</td></tr><tr><td><strong>Notified goods</strong></td><td>SN013, SN015, SN020, SN024</td><td>Electricity to retailers, mobile phones (Ninth Schedule), EVs, SRO 297(I)/2023.</td></tr><tr><td><strong>Retail to end consumers</strong></td><td>SN026, SN027, SN028</td><td>The retailer variants of standard / 3rd Schedule / reduced rate.</td></tr></tbody></table></div>
+<p>If your seller's assigned list is short, still run one scenario from each group your catalogue can produce. The groups map one-to-one onto the branches in your payload builder — that is where the bugs are.</p>
+<hr />
+<h2>4. Running them</h2>
+<p><strong>Order matters.</strong> Do it in this sequence:</p>
+<ol><li><strong>Validate all</strong> (<code>validateinvoicedata_sb</code>) — writes nothing, so iterate freely. Fix every failure here first.</li><li><strong>Post the assigned ones</strong> (<code>postinvoicedata_sb</code>) — each must return <code>statusCode: "00"</code>, <code>"Valid"</code>, and an <code>invoiceNumber</code>.</li><li><strong>Repeat from your own application</strong>, not just the harness. The harness proves FBR accepts the payload; only your app proves your <em>mapping</em> produces that payload from a real sale.</li><li><strong>Check IRIS → Sandbox</strong> shows every assigned scenario completed, then generate the production token.</li></ol>
+<p>The seller identity in the JSON file is sample data. Replace <code>sellerNTNCNIC</code>, <code>sellerBusinessName</code>, <code>sellerProvince</code> and <code>sellerAddress</code> with the values registered against <strong>your</strong> token — FBR rejects a payload whose seller does not match the token's owner. The harness has fields that apply your seller to every scenario in one go.</p>
+<hr />
+<h2>5. Buyer identities in the sandbox</h2>
+<p>FBR cross-checks <code>buyerRegistrationType</code> against the buyer NTN/CNIC's real profile (<code>[0053]</code>).</p>
+<div class="tablewrap"><table><thead><tr><th>Buyer value</th><th>Send as</th></tr></thead><tbody><tr><td><code>2046004</code></td><td><code>"Registered"</code> — the known registered sandbox NTN</td></tr><tr><td>A dummy 13-digit CNIC (<code>10000000000xx</code>)</td><td><code>"Unregistered"</code></td></tr><tr><td>A real buyer NTN</td><td>Whatever <code>dist/v1/Get_Reg_Type</code> reports for it</td></tr></tbody></table></div>
+<p>Do not invent an NTN and mark it Registered — that is the fastest way to a rejection that looks like a payload bug but is not.</p>
+<hr />
+<h2>6. When a scenario fails</h2>
+<div class="tablewrap"><table><thead><tr><th>Symptom</th><th>Where the fix lives</th></tr></thead><tbody><tr><td><code>[0203] Provided scenario does not exists</code></td><td><strong>IRIS, not code.</strong> The scenario is not on this seller's assigned list.</td></tr><tr><td><code>[0204] Sale type not match with provided scenario No.</code></td><td>Your <code>saleType</code> string differs from FBR's registry — copy it from the JSON file character for character.</td></tr><tr><td><code>[0053] Registration type does not match</code></td><td><code>buyerRegistrationType</code> vs the buyer's real profile. See §5.</td></tr><tr><td><code>[0091]</code> on a reduced-rate scenario</td><td>You sent numeric <code>0</code> in <code>extraTax</code>/<code>furtherTax</code>. Send <code>""</code>.</td></tr><tr><td><code>[0300]</code> numeric values invalid</td><td>A required numeric is <code>null</code>/omitted, or <code>valueSalesExcludingST</code> is <code>0</code>.</td></tr><tr><td><code>[0129]</code> petroleum levy empty</td><td>SN012 needs <code>petroleumLevyOn</code>.</td></tr><tr><td><code>[0046] Provide rate.</code></td><td><code>rate</code> missing, or not the lookup string for that sale type.</td></tr><tr><td><code>[0052]</code> HS code</td><td><code>hsCode</code> not in FBR's list or wrongly formatted.</td></tr><tr><td>HTTP 401</td><td>Wrong token, or a production token on a <code>_sb</code> URL.</td></tr></tbody></table></div>
+<p>Full error table and response-handling rules: §8 and §10 of <a class="xref" data-view="di-guide" href="#di-guide"><code>fbr-digital-invoice-developer-guide.md</code></a>.</p></article>
+    </div>
+  </section>
+
+  <!-- ============ shared by both testers ============ -->
+  <div id="connection" class="hide">
+    <div class="note">
+      <strong>Read first.</strong>
+      (1) A browser cannot call <code>gw.fbr.gov.pk</code> directly &mdash; FBR sends no CORS headers, so the reply is
+      blocked and shows as &ldquo;Failed to fetch&rdquo;. Run <code>node fbr-proxy.js</code> (source on the Overview tab)
+      and leave the Proxy URL below set to <code>http://localhost:8787/proxy</code>.
+      (2) Your token is kept in this browser&rsquo;s localStorage for convenience. Use a <strong>sandbox</strong> token here;
+      production tokens belong in your server&rsquo;s secret store.
+      (3) <strong>DI Post</strong> and <strong>every POS call</strong> write real records. Only DI <em>Validate</em> is a dry run.
+    </div>
+    <div class="panel">
+      <h2>Connection</h2>
+      <div class="grid">
+        <div>
+          <label>Proxy URL <span class="muted">(blank = direct, will hit CORS)</span></label>
+          <input id="proxy" placeholder="http://localhost:8787/proxy" />
+        </div>
+        <div>
+          <label>Request timeout (seconds)</label>
+          <input id="timeout" type="number" min="5" max="180" value="45" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================= DI TESTER ====================== -->
+  <section id="view-di-test" class="view">
+    <div class="panel">
+      <h2>DI &mdash; endpoint &amp; token</h2>
+      <div class="grid">
+        <div>
+          <label>Environment</label>
+          <select id="diEnv">
+            <option value="sb">Sandbox (_sb)</option>
+            <option value="prod">Production (live)</option>
+          </select>
+        </div>
+        <div>
+          <label>Operation</label>
+          <select id="diOp">
+            <option value="validateinvoicedata">Validate only (dry run, writes nothing)</option>
+            <option value="postinvoicedata">Post (creates a real FBR invoice)</option>
+          </select>
+        </div>
+        <div style="grid-column:1/-1">
+          <label>Endpoint URL <span class="muted">(auto-derived; edit if FBR moves the host)</span></label>
+          <input id="diUrl" />
+        </div>
+        <div style="grid-column:1/-1">
+          <label>Bearer token</label>
+          <input id="diToken" type="password" placeholder="paste the DI token issued in IRIS" />
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>DI &mdash; seller identity <span class="muted" style="text-transform:none;letter-spacing:0">(must match the token&rsquo;s owner &mdash; applied to every scenario)</span></h2>
+      <div class="grid">
+        <div><label>sellerNTNCNIC</label><input id="sNtn" placeholder="8885801" /></div>
+        <div><label>sellerBusinessName</label><input id="sName" placeholder="Company 8" /></div>
+        <div><label>sellerProvince</label><input id="sProv" placeholder="Sindh" /></div>
+        <div><label>sellerAddress</label><input id="sAddr" placeholder="Karachi" /></div>
+      </div>
+      <div class="row">
+        <button class="ghost" id="applySeller">Apply seller to the loaded payload</button>
+        <span class="muted">Leave a field blank to keep the scenario&rsquo;s sample value.</span>
+      </div>
+    </div>
+
+    <div class="split">
+      <div class="panel">
+        <h2>Scenario &amp; payload</h2>
+        <div><label>Scenario</label><select id="diScenario"></select></div>
+        <p class="muted" id="diScenarioDesc" style="margin:8px 0 0"></p>
+        <div class="row">
+          <button class="ghost" id="diLoad">Load payload</button>
+          <button class="ghost" id="diFormat">Format JSON</button>
+          <button class="ghost" id="diCurl">Copy as curl</button>
+        </div>
+        <div style="margin-top:10px">
+          <label>Request body (editable)</label>
+          <textarea id="diBody" spellcheck="false"></textarea>
+        </div>
+        <div class="row">
+          <button class="act" id="diRun">Send this scenario</button>
+          <button class="ghost" id="diRunAll">Run ALL scenarios</button>
+          <button class="ghost" id="diExport">Export results (CSV)</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Response</h2>
+        <pre class="out" id="diOut">Nothing sent yet.</pre>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Results</h2>
+      <div class="scroll"><table>
+        <thead><tr><th style="width:70px">Scenario</th><th style="width:70px">Verdict</th><th style="width:150px">FBR invoice #</th><th>Detail</th></tr></thead>
+        <tbody id="diResults"><tr><td colspan="4" class="muted">No runs yet.</td></tr></tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <!-- ====================== POS TESTER ====================== -->
+  <section id="view-pos-test" class="view">
+    <div class="note">
+      <strong>POS has no validate endpoint.</strong> Every call below creates a record. Keep the environment on
+      Sandbox until you are ready to file real receipts.
+    </div>
+
+    <div class="panel">
+      <h2>POS &mdash; endpoint &amp; token</h2>
+      <div class="grid">
+        <div>
+          <label>Environment</label>
+          <select id="posEnv">
+            <option value="sb">Sandbox (esp.fbr.gov.pk:8244)</option>
+            <option value="prod">Production (gw.fbr.gov.pk)</option>
+          </select>
+        </div>
+        <div>
+          <label>bposId <span class="muted">(registered terminal)</span></label>
+          <input id="posBpos" placeholder="05" />
+        </div>
+        <div style="grid-column:1/-1">
+          <label>Endpoint URL</label>
+          <input id="posUrl" />
+        </div>
+        <div style="grid-column:1/-1">
+          <label>Bearer token <span class="muted">(FBR&rsquo;s published sandbox sample: 07eabd29-fb34-3a2a-ab73-1ff4eb282aef)</span></label>
+          <input id="posToken" type="password" placeholder="paste the POS token issued in IRIS" />
+        </div>
+        <div><label>distributor_NTN_CNIC <span class="muted">(seller)</span></label><input id="posSellerNtn" placeholder="8885801" /></div>
+        <div><label>distributorName <span class="muted">(seller)</span></label><input id="posSellerName" placeholder="Demo Traders (Pvt) Ltd" /></div>
+      </div>
+    </div>
+
+    <div class="split">
+      <div class="panel">
+        <h2>Payload</h2>
+        <div><label>Sample</label><select id="posSample"></select></div>
+        <p class="muted" id="posSampleDesc" style="margin:8px 0 0"></p>
+        <div class="row">
+          <button class="ghost" id="posLoad">Load payload</button>
+          <button class="ghost" id="posFormat">Format JSON</button>
+          <button class="ghost" id="posTotals">Recompute header totals</button>
+          <button class="ghost" id="posCurl">Copy as curl</button>
+        </div>
+        <div style="margin-top:10px">
+          <label>Request body (editable)</label>
+          <textarea id="posBody" spellcheck="false"></textarea>
+        </div>
+        <div class="row"><button class="act" id="posRun">Send to FBR POS</button></div>
+      </div>
+
+      <div class="panel">
+        <h2>Response</h2>
+        <pre class="out" id="posOut">Nothing sent yet.</pre>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Results</h2>
+      <div class="scroll"><table>
+        <thead><tr><th style="width:120px">Sample</th><th style="width:70px">Verdict</th><th style="width:200px">Tracking #</th><th>Detail</th></tr></thead>
+        <tbody id="posResults"><tr><td colspan="4" class="muted">No runs yet.</td></tr></tbody>
+      </table></div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* ------------------------------------------------------------------ *
+ * Data
+ * ------------------------------------------------------------------ */
+const SCENARIOS = [
+  {
+    "id": "SN001",
+    "title": "Sale of Standard Rate Goods to Registered Buyers",
+    "description": "Sale of goods at the standard sales tax rate to a sales-tax registered buyer who can claim input tax credits.",
+    "payload": {
+      "invoiceType": "Sale Invoice",
+      "invoiceDate": "2025-05-10",
+      "sellerBusinessName": "Company 8",
+      "sellerProvince": "Sindh",
+      "sellerNTNCNIC": "8885801",
+      "sellerAddress": "Karachi",
+      "buyerNTNCNIC": "2046004",
+      "buyerBusinessName": "FERTILIZER MANUFAC IRS NEW",
+      "buyerProvince": "Sindh",
+      "buyerAddress": "Karachi",
+      "invoiceRefNo": "",
+      "scenarioId": "SN001",
+      "buyerRegistrationType": "Registered",
+      "items": [
+        {
+          "hsCode": "0101.2100",
+          "productDescription": "test",
+          "rate": "18%",
+          "uoM": "Numbers, pieces, units",
+          "quantity": 400,
+          "totalValues": 0,
+          "valueSalesExcludingST": 1000,
+          "fixedNotifiedValueOrRetailPrice": 0,
+          "salesTaxApplicable": 180,
+          "salesTaxWithheldAtSource": 0,
+          "extraTax": 0,
+          "furtherTax": 0,
+          "sroScheduleNo": "",
+          "fedPayable": 0,
+          "discount": 0,
+          "saleType": "Goods at standard rate (default)",
+          "sroItemSerialNo": ""
+        }
+      ]
+    }
+  },
+  {
+    "id": "SN002",
+    "title": "Sale of Standard Rate Goods to Unregistered Buyers",
+    "description": "Sale of standard-rate goods to an unregistered buyer (B2C). The seller charges full sales tax; the buyer cannot claim input tax credits.",
+    "payload": {
+      "invoiceType": "Sale Invoice",
+      "invoiceDate": "2025-05-10",
+      "sellerBusinessName": "Company 8",
+      "sellerProvince": "Sindh",
+      "sellerNTNCNIC": "8885801",
+      "sellerAddress": "Karachi",
+      "buyerNTNCNIC": "1234567",
+      "buyerBusinessName": "FERTILIZER MANUFAC IRS NEW",
+      "buyerProvince": "Sindh",
+      "buyerAddress": "Karachi",
+      "invoiceRefNo": "",
+      "scenarioId": "SN002",
+      "buyerRegistrationType": "Unregistered",
+      "items": [
+        {
+          "hsCode": "0101.2100",
+          "productDescription": "test",
+          "rate": "18%",
+          "uoM": "Numbers, pieces, units",
+          "quantity": 400,
+          "totalValues": 0,
+          "valueSalesExcludingST": 1000,
+          "fixedNotifiedValueOrRetailPrice": 0,
+          "salesTaxApplicable": 180,
+          "salesTaxWithheldAtSource": 0,
+          "extraTax": 0,
+          "furtherTax": 0,
+          "sroScheduleNo": "",
+          "fedPayable": 0,
+          "discount": 0,
+          "saleType": "Goods at standard rate (default)",
+          "sroItemSerialNo": ""
+        }
+      ]
+    }
+  },
+  {
+    "id": "SN003",
+    "title": "Sale of Steel (Melted and Re-Rolled) (Billets, Ingots and Long Bars)",
+    "description": "Sale of steel goods governed by sector-specific traceability rules; commonly traded by re-rollers and manufacturers.",
+    "payload": {
+      "invoiceType": "Sale Invoice",
+      "invoiceDate": "2025-04-21",
+      "sellerBusinessName": "Company 7",
+      "sellerNTNCNIC": "8885801",
+      "sellerProvince": "Sindh",
+      "buyerNTNCNIC": "3710505701479",
+      "buyerBusinessName": "FERTILIZER MANUFAC IRS NEW",
+      "buyerProvince": "Sindh",
+      "buyerAddress": "Karachi",
+      "sellerAddress": "Karachi",
+      "invoiceRefNo": "0",
+      "scenarioId": "SN003",
+      "buyerRegistrationType": "Unregistered",
+      "items": [
+        {
+          "hsCode": "7214.1010",
+          "productDescription": "",
+          "rate": "18%",
+          "uoM": "MT",
+          "quantity": 1,
+          "totalValues": 0,
+          "valueSalesExcludingST": 205000,
+          "fixedNotifiedValueOrRetailPrice": 0,
+          "salesTaxApplicable": 36900,
+          "salesTaxWithheldAtSource": 0,
+          "extraTax": 0,
+          "furtherTax": 0,
+          "sroScheduleNo": "",
+          "fedPayable": 0,
+          "discount": 0,
+          "saleType": "Steel melting and re-rolling",
+          "sroItemSerialNo": ""
+        }
+      ]
+    }
+  },
+  {
+    "id": "SN004",
+    "title": "Sale of Steel Scrap by Ship Breakers",
+    "description": "Sale of scrap steel recovered by ship breakers, which is treated separately for tax purposes with sector-specific compliance.",
+    "payload": {
+      "invoiceType": "Sale Invoice",
+      "invoiceDate": "2025-05-26",
+      "sellerNTNCNIC": "4130276175937",
+      "sellerBusinessName": "Company 8",
+      "sellerAddress": "Karachi",
+      "sellerProvince": "Sindh",
+      "buyerNTNCNIC": "3710505701479",
+      "buyerBusinessName": "FERTILIZER MANUFAC IRS NEW",
+      "buyerProvince": "Sindh",
+      "buyerAddress": "Karachi",
+      "invoiceRefNo": "SI-20250421-001",
+      "scenarioId": "SN004",
+      "buyerRegistrationType": "Unregistered",
+      "items": [
+        {
+          "hsCode": "7204.1010",
+          "productDescription": "",
+          "rate": "18%",
+          "uoM": "MT",
+          "quantity": 1,
+          "totalValues": 0,
+          "valueSalesExcludingST": 175000,
+          "salesTaxApplicable": 31500,
+          "fixedNotifiedValueOrRetailPrice": 0,
+          "salesTaxWithheldAtSource": 0,
+          "extraTax": 0,
+          "furtherTax": 0,
+          "sroScheduleNo": "",
+          "fedPayable": 0,
+          "discount": 0,
+          "saleType": "Ship breaking",
+          "sroItemSerialNo": ""
+        }
+      ]
+    }
+  },
+  {
+    "id": "SN005",
+    "title": "Sales of Reduced Rate Goods (Eighth Schedule)",
+    "description": "Sale of goods taxed at a reduced sales tax rate as listed in the Eighth Schedule (e.g. basic food items, medicines, essentials).",
+    "payload": {
+      "invoiceType": "Sale Invoice",
+      "invoiceDate": "2025-06-30",
+      "sellerNTNCNIC": "8885801",
+      "sellerBusinessName": "B2",
+      "sellerAddress": "Karachi",
+      "sellerProvince": "Sindh",
+      "buyerNTNCNIC": "1000000000000",
+      "buyerBusinessName": "FERTILIZER MANUFAC IRS NEW",
+      "buyerProvince": "Sindh",
+      "buyerAddress": "Karachi",
+      "invoiceRefNo": "",
+      "scenarioId": "SN005",
+      "buyerRegistrationType": "Unregistered",
+      "items": [
+        {
+          "hsCode": "0102.2930",
+          "productDescription": "product Description41",
+          "rate": "1%",
+          "uoM": "Numbers, pieces, units",
+          "quantity": 1,
+          "totalValues": 0,
+          "valueSalesExcludingST": 1000,
+          "fixedNotifiedValueOrRetailPrice": 0,
+          "salesTaxApplicable": 10,
+          "salesTaxWithheldAtSource": 50.23,
+          "extraTax": "",
+          "furtherTax": 120,
+          "sroScheduleNo": "EIGHTH SCHEDULE Table 1",
+          "fedPayable": 50.36,
+          "discount": 56.36,
+          "saleType": "Goods at Reduced Rate",
+          "sroItemSerialNo": "82"
+        }
+      ]
+    }
+  },
+  {
+    "id": "SN006",
+    "title": "Sale of Exempt Goods (Sixth Schedule)",
+    "description": "Sale of goods exempt from sales tax as listed in the Sixth Schedule. No sales tax is charged on these supplies.",
+    "payload": {
+      "invoiceType": "Sale Invoice",
+      "invoiceDate": "2025-06-30",
+      "sellerNTNCNIC": "8885801",
+      "sellerBusinessName": "Company 8",
+      "sellerAddress": "Karachi",
+      "sellerProvince": "Sindh",
+      "buyerNTNCNIC": "1000000000000",
+      "buyerBusinessName": "FERTILIZER MANUFAC IRS NEW",
+      "buyerProvince": "Sindh",
+      "buyerAddress": "Karachi",
+      "invoiceRefNo": "",
+      "scenarioId": "SN006",
+      "buyerRegistrationType": "Unregistered",
+      "items": [
+        {
+          "hsCode": "0102.2930",
+          "productDescription": "Exempt goods",
+          "rate": "Exempt",
+          "uoM": "Numbers, pieces, units",
+          "quantity": 1,
+          "totalValues": 0,
+          "valueSalesExcludingST": 10,
+          "fixedNotifiedValueOrRetailPrice": 0,
+          "salesTaxApplicable": 0,
+          "salesTaxWithheldAtSource": 50.23,
+          "extraTax": "",
+          "furtherTax": 120,
+          "sroScheduleNo": "6th Schd Table I",
+          "fedPayable": 50.36,
+          "discount": 56.36,
+          "saleType": "Exempt goods",
+          "sroItemSerialNo": "100"
+        }
+      ]
+    }
+  },
+  {
+    "id": "SN007",
+    "title": "Sale of Zero-Rated Goods (Fifth Schedule)",
+    "description": "Sale of zero-rated goods (sales tax at 0%). The seller charges no tax but can still claim input tax credits — typically applied to exports.",
+    "payload": {
+      "invoiceType": "Sale Invoice",
+      "invoiceDate": "2025-04-21",
+      "sellerBusinessName": "Company 7",
+      "sellerNTNCNIC": "8885801",
+      "sellerProvince": "Sindh",
+      "buyerNTNCNIC": "3710505701479",
+      "buyerBusinessName": "FERTILIZER MANUFAC IRS NEW",
+      "buyerProvince": "Sindh",
+      "buyerAddress": "Karachi",
+      "sellerAddress": "Karachi",
+      "scenarioId": "SN007",
+      "buyerRegistrationType": "Unregistered",
+      "invoiceRefNo": "0",
+      "items": [
+        {
+          "hsCode": "0101.2100",
+          "productDescription": "test",
+          "rate": "0%",
+          "uoM": "Numbers, pieces, units",
+          "quantity": 100,
+          "totalValues": 0,
+          "valueSalesExcludingST": 100,
+          "salesTaxApplicable": 0,
+          "salesTaxWithheldAtSource": 0,
+          "extraTax": 0,
+          "furtherTax": 0,
+          "sroScheduleNo": "327(I)/2008",
+          "fixedNotifiedValueOrRetailPrice": 0,
+          "fedPayable": 0,
+          "discount": 0,
+          "saleType": "Goods at zero-rate",
+          "sroItemSerialNo": "1"
+        }
+      ]
+    }
+  },
+  {
+    "id": "SN008",
+    "title": "Sale of 3rd Schedule Goods",
+    "description": "Sale of Third Schedule goods taxed on printed retail price rather than transaction value; tax is paid at production/import by the manufacturer or importer.",
+    "payload": {
+      "invoiceType": "Sale Invoice",
+      "invoiceDate": "2025-04-21",
+      "sellerNTNCNIC": "8885801",
+      "sellerBusinessName": "Company 7",
+      "sellerProvince": "Sindh",
+      "buyerNTNCNIC": "3710505701479",
+      "buyerBusinessName": "FERTILIZER MANUFAC IRS NEW",
+      "buyerProvince": "Sindh",
+      "buyerAddress": "Karachi",
+      "sellerAddress": "Karachi",
+      "invoiceRefNo": "0",
+      "scenarioId": "SN008",
+      "buyerRegistrationType": "Unregistered",
+      "items": [
+        {
+          "hsCode": "0101.2100",
+          "productDescription": "test",
+          "rate": "18%",
+          "uoM": "Numbers, pieces, units",
+          "quantity": 100,
+          "totalValues": 145,
+          "valueSalesExcludingST": 1,
+          "fixedNotifiedValueOrRetailPrice": 1000,
+          "salesTaxApplicable": 180,
+          "salesTaxWithheldAtSource": 0,
+          "extraTax": 0,
+          "furtherTax": 0,
+          "sroScheduleNo": "",
+          "fedPayable": 0,
+          "discount": 0,
+          "saleType": "3rd Schedule Goods",
+          "sroItemSerialNo": ""
+        }
+      ]
+    }
+  },
+  {
+    "id": "SN009",
+    "title": "Purchase from Registered Cotton Ginners",
+    "description": "Purchases from registered cotton ginners, subject to specific cotton-trade taxation rules; may involve reverse charge or input tax mechanisms.",
+    "payload": {
+      "invoiceType": "Sale Invoice",
+      "invoiceDate": "2025-05-15",
+      "sellerNTNCNIC": "8885801",
+      "sellerBusinessName": "Company 8",
+      "sellerProvince": "Sindh",
+      "sellerAddress": "Karachi",
+      "buyerNTNCNIC": "2046004",
+      "buyerBusinessName": "FERTILIZER MANUFAC IRS NEW",
+      "buyerProvince": "Sindh",
+      "buyerAddress": "Karachi",
+      "invoiceRefNo": "",
+      "scenarioId": "SN009",
+      "buyerRegistrationType": "Registered",
+      "items": [
+        {
+          "hsCode": "0101.2100",
+          "productDescription": "test",
+          "rate": "18%",
+          "uoM": "Numbers, pieces, units",
+          "quantity": 0,
+          "totalValues": 2500,
+          "valueSalesExcludingST": 2500,
+          "fixedNotifiedValueOrRetailPrice": 0,
+          "salesTaxApplicable": 450,
+          "salesTaxWithheldAtSource": 0,
+          "extraTax": 0,
+          "furtherTax": 0,
+          "sroScheduleNo": "",
+          "fedPayable": 0,
+          "discount": 0,
+          "saleType": "Cotton ginners",
+          "sroItemSerialNo": ""
+        }
+      ]
+    }
+  },
+  {
+    "id": "SN010",
+    "title": "Sale of Telecom Services by Mobile Operators",
+    "description": "Telecom services (calls, data, SMS) taxed under rules separate from goods, often with both FED and GST that can vary by province.",
+    "payload": {
+      "invoiceType": "Sale Invoice",
+      "invoiceDate": "2025-05-15",
+      "sellerBusinessName": "Company 8",
+      "sellerNTNCNIC": "8885801",
+      "sellerProvince": "Sindh",
+      "sellerAddress": "Karachi",
+      "buyerNTNCNIC": "1000000000000",
+      "buyerBusinessName": "FERTILIZER MANUFAC IRS NEW",
+      "buyerProvince": "Sindh",
+      "buyerAddress": "Karachi",
+      "invoiceRefNo": "SI-20250515-001",
+      "scenarioId": "SN010",
+      "buyerRegistrationType": "Unregistered",
+      "items": [
+        {
+          "hsCode": "0101.2100",
+          "productDescription": "test",
+          "rate": "17%",
+          "uoM": "Numbers, pieces, units",
+          "quantity": 1000,
+          "totalValues": 0,
+          "valueSalesExcludingST": 100,
+          "fixedNotifiedValueOrRetailPrice": 0,
+          "salesTaxApplicable": 17,
+          "salesTaxWithheldAtSource": 0,
+          "extraTax": 0,
+          "furtherTax": 0,
+          "sroScheduleNo": "",
+          "fedPayable": 0,
+          "discount": 0,
+          "saleType": "Telecommunication services",
+          "sroItemSerialNo": ""
+        }
+      ]
+    }
+  },
+  {
+    "id": "SN011",
+    "title": "Sale of Steel through Toll Manufacturing (Billets, Ingots and Long Bars)",
+    "description": "Toll manufacturing where a third party processes raw steel on behalf of the principal; ownership and processing roles are split, so sales tax treatment differs.",
+    "payload": {
+      "invoiceType": "Sale Invoice",
+      "invoiceDate": "2025-05-26",
+      "sellerNTNCNIC": "4130276175937",
+      "sellerBusinessName": "Company 8",
+      "sellerAddress": "Karachi",
+      "sellerProvince": "Sindh",
+      "buyerNTNCNIC": "3710505701479",
+      "buyerBusinessName": "FERTILIZER MANUFAC IRS NEW",
+      "buyerProvince": "Sindh",
+      "buyerAddress": "Karachi",
+      "invoiceRefNo": "",
+      "scenarioId": "SN011",
+      "buyerRegistrationType": "Unregistered",
+      "items": [
+        {
+          "hsCode": "7214.9990",
+          "productDescription": "",
+          "rate": "18%",
+          "uoM": "MT",
+          "quantity": 1,
+          "totalValues": 205000,
+          "valueSalesExcludingST": 205000,
+          "salesTaxApplicable": 36900,
+          "fixedNotifiedValueOrRetailPrice": 0,
+          "salesTaxWithheldAtSource": 0,
+          "extraTax": 0,
+          "furtherTax": 0,
+          "sroScheduleNo": "",
+          "fedPayable": 0,
+          "discount": 0,
+          "saleType": "Toll Manufacturing",
+          "sroItemSerialNo": ""
+        }
+      ]
+    }
+  },
+  {
+    "id": "SN012",
+    "title": "Sale of Petroleum Products",
+    "description": "Petroleum products (petrol, diesel, lubricants) with distinct sales tax rates or federal excise duties, often carrying multiple layers of tax or regulatory levies.",
+    "payload": {
+      "invoiceType": "Sale Invoice",
+      "invoiceDate": "2025-05-15",
+      "sellerNTNCNIC": "8885801",
+      "sellerBusinessName": "FERTILIZER MANUFAC IRS NEW",
+      "sellerProvince": "Sindh",
+      "sellerAddress": "Karachi",
+      "buyerNTNCNIC": "1000000000000",
+      "buyerBusinessName": "FERTILIZER MANUFAC IRS NEW",
+      "buyerProvince": "Sindh",
+      "buyerAddress": "Karachi",
+      "invoiceRefNo": "SI-20250515-001",
+      "scenarioId": "SN012",
+      "buyerRegistrationType": "Unregistered",
+      "items": [
+        {
+          "hsCode": "0101.2100",
+          "productDescription": "TEST",
+          "rate": "1.43%",
+          "uoM": "Numbers, pieces, units",
+          "quantity": 123,
+          "totalValues": 132,
+          "valueSalesExcludingST": 100,
+          "fixedNotifiedValueOrRetailPrice": 0,
+          "salesTaxApplicable": 1.43,
+          "salesTaxWithheldAtSource": 2,
+          "extraTax": 0,
+          "furtherTax": 0,
+          "sroScheduleNo": "1450(I)/2021",
+          "fedPayable": 0,
+          "discount": 0,
+          "petroleumLevyOn": 100,
+          "saleType": "Petroleum Products",
+          "sroItemSerialNo": "4"
+        }
+      ]
+    }
+  },
+  {
+    "id": "SN013",
+    "title": "Sale of Electricity to Retailers",
+    "description": "Selling electricity to retailers; sales tax or federal excise duty may apply differently for wholesale vs retail supply, with some consumer exemptions.",
+    "payload": {
+      "invoiceType": "Sale Invoice",
+      "invoiceDate": "2025-05-15",
+      "sellerNTNCNIC": "8885801",
+      "sellerBusinessName": "Company 8",
+      "sellerProvince": "Sindh",
+      "sellerAddress": "Karachi",
+      "buyerNTNCNIC": "1000000000000",
+      "buyerBusinessName": "FERTILIZER MANUFAC IRS NEW",
+      "buyerProvince": "Sindh",
+      "buyerAddress": "Karachi",
+      "invoiceRefNo": "SI-20250515-001",
+      "scenarioId": "SN013",
+      "buyerRegistrationType": "Unregistered",
+      "items": [
+        {
+          "hsCode": "0101.2100",
+          "productDescription": "TEST",
+          "rate": "5%",
+          "uoM": "Numbers, pieces, units",
+          "quantity": 123,
+          "totalValues": 212,
+          "valueSalesExcludingST": 1000,
+          "fixedNotifiedValueOrRetailPrice": 0,
+          "salesTaxApplicable": 50,
+          "salesTaxWithheldAtSource": 11,
+          "extraTax": 0,
+          "furtherTax": 0,
+          "sroScheduleNo": "1450(I)/2021",
+          "fedPayable": 0,
+          "discount": 0,
+          "saleType": "Electricity Supply to Retailers",
+          "sroItemSerialNo": "4"
+        }
+      ]
+    }
+  },
+  {
+    "id": "SN014",
+    "title": "Sale of Gas to CNG Stations",
+    "description": "Natural gas sold to CNG filling stations, with special tax treatment to promote cleaner fuels; rates and compliance can differ from other gas sales.",
+    "payload": {
+      "invoiceType": "Sale Invoice",
+      "invoiceDate": "2025-05-15",
+      "sellerNTNCNIC": "8885801",
+      "sellerBusinessName": "Company 8",
+      "sellerProvince": "Sindh",
+      "sellerAddress": "Karachi",
+      "buyerNTNCNIC": "1000000000000",
+      "buyerBusinessName": "FERTILIZER MANUFAC IRS NEW",
+      "buyerProvince": "Sindh",
+      "buyerAddress": "Karachi",
+      "invoiceRefNo": "SI-20250515-001",
+      "scenarioId": "SN014",
+      "buyerRegistrationType": "Unregistered",
+      "items": [
+        {
+          "hsCode": "0101.2100",
+          "productDescription": "TEST",
+          "rate": "18%",
+          "uoM": "Numbers, pieces, units",
+          "quantity": 123,
+          "totalValues": 0,
+          "valueSalesExcludingST": 1000,
+          "salesTaxApplicable": 180,
+          "salesTaxWithheldAtSource": 0,
+          "fixedNotifiedValueOrRetailPrice": 0,
+          "extraTax": 0,
+          "furtherTax": 0,
+          "sroScheduleNo": "",
+          "fedPayable": 0,
+          "discount": 0,
+          "saleType": "Gas to CNG stations",
+          "sroItemSerialNo": ""
+        }
+      ]
+    }
+  },
+  {
+    "id": "SN015",
+    "title": "Sale of Mobile Phones",
+    "description": "Sales of mobile handsets at standard sales tax, often with additional duties or regulatory charges (Ninth Schedule) given the value of the goods.",
+    "payload": {
+      "invoiceType": "Sale Invoice",
+      "invoiceDate": "2025-05-15",
+      "sellerBusinessName": "Company 8",
+      "sellerNTNCNIC": "8885801",
+      "sellerProvince": "Sindh",
+      "sellerAddress": "Karachi",
+      "buyerNTNCNIC": "1000000000000",
+      "buyerBusinessName": "FERTILIZER MANUFAC IRS NEW",
+      "buyerProvince": "Sindh",
+      "buyerAddress": "Karachi",
+      "invoiceRefNo": "SI-20250515-001",
+      "scenarioId": "SN015",
+      "buyerRegistrationType": "Unregistered",
+      "items": [
+        {
+          "hsCode": "0101.2100",
+          "productDescription": "TEST",
+          "rate": "18%",
+          "uoM": "Numbers, pieces, units",
+          "quantity": 123,
+          "totalValues": 0,
+          "valueSalesExcludingST": 1234,
+          "salesTaxApplicable": 222.12,
+          "salesTaxWithheldAtSource": 0,
+          "fixedNotifiedValueOrRetailPrice": 0,
+          "extraTax": 0,
+          "furtherTax": 0,
+          "sroScheduleNo": "NINTH SCHEDULE",
+          "fedPayable": 0,
+          "discount": 0,
+          "saleType": "Mobile Phones",
+          "sroItemSerialNo": "1(A)"
+        }
+      ]
+    }
+  },
+  {
+    "id": "SN016",
+    "title": "Processing / Conversion of Goods",
+    "description": "Services that convert raw or semi-finished goods into finished products (dyeing, packaging, machining). Tax applies to the value-added process, not the goods.",
+    "payload": {
+      "invoiceType": "Sale Invoice",
+      "invoiceDate": "2025-05-16",
+      "sellerNTNCNIC": "8885801",
+      "sellerBusinessName": "Company 8",
+      "sellerProvince": "Sindh",
+      "sellerAddress": "Karachi",
+      "buyerNTNCNIC": "1000000000078",
+      "buyerBusinessName": "FERTILIZER MANUFAC IRS NEW",
+      "buyerProvince": "Sindh",
+      "buyerAddress": "Karachi",
+      "invoiceRefNo": "",
+      "scenarioId": "SN016",
+      "buyerRegistrationType": "Unregistered",
+      "items": [
+        {
+          "hsCode": "0101.2100",
+          "productDescription": "test",
+          "rate": "5%",
+          "uoM": "Numbers, pieces, units",
+          "quantity": 1,
+          "totalValues": 0,
+          "valueSalesExcludingST": 100,
+          "salesTaxApplicable": 5,
+          "salesTaxWithheldAtSource": 0,
+          "fixedNotifiedValueOrRetailPrice": 0,
+          "extraTax": 0,
+          "furtherTax": 0,
+          "sroScheduleNo": "",
+          "fedPayable": 0,
+          "discount": 0,
+          "saleType": "Processing/Conversion of Goods",
+          "sroItemSerialNo": ""
+        }
+      ]
+    }
+  },
+  {
+    "id": "SN017",
+    "title": "Sale of Goods Where FED Is Charged in ST Mode",
+    "description": "Federal Excise Duty collected through the sales tax system (\"ST mode\"); the seller includes FED in the sales tax invoice to streamline collection.",
+    "payload": {
+      "invoiceType": "Sale Invoice",
+      "invoiceDate": "2025-05-10",
+      "sellerNTNCNIC": "8885801",
+      "sellerBusinessName": "Company 8",
+      "sellerProvince": "Sindh",
+      "sellerAddress": "Karachi",
+      "buyerNTNCNIC": "7000009",
+      "buyerBusinessName": "FERTILIZER MANUFAC IRS NEW",
+      "buyerProvince": "Sindh",
+      "buyerAddress": "Karachi",
+      "invoiceRefNo": "",
+      "scenarioId": "SN017",
+      "buyerRegistrationType": "Unregistered",
+      "items": [
+        {
+          "hsCode": "0101.2100",
+          "productDescription": "TEST",
+          "rate": "8%",
+          "uoM": "Numbers, pieces, units",
+          "quantity": 1,
+          "valueSalesExcludingST": 100,
+          "fixedNotifiedValueOrRetailPrice": 0,
+          "salesTaxApplicable": 8,
+          "salesTaxWithheldAtSource": 0,
+          "extraTax": 0,
+          "furtherTax": 0,
+          "fedPayable": 0,
+          "discount": 0,
+          "totalValues": 0,
+          "saleType": "Goods (FED in ST Mode)",
+          "sroScheduleNo": "",
+          "sroItemSerialNo": ""
+        }
+      ]
+    }
+  },
+  {
+    "id": "SN018",
+    "title": "Sale of Services Where FED Is Charged in ST Mode",
+    "description": "Services (advertisement, franchise, insurance) liable to FED but invoiced under the sales tax framework, so FED and sales tax need not be filed separately.",
+    "payload": {
+      "invoiceType": "Sale Invoice",
+      "invoiceDate": "2025-06-14",
+      "sellerNTNCNIC": "8885801",
+      "sellerBusinessName": "Company 8",
+      "sellerProvince": "Sindh",
+      "sellerAddress": "Karachi",
+      "buyerNTNCNIC": "1000000000056",
+      "buyerBusinessName": "FERTILIZER MANUFAC IRS NEW",
+      "buyerProvince": "Sindh",
+      "buyerAddress": "Karachi",
+      "invoiceRefNo": "SI-20250421-001",
+      "scenarioId": "SN018",
+      "buyerRegistrationType": "Unregistered",
+      "items": [
+        {
+          "hsCode": "0101.2100",
+          "productDescription": "TEST",
+          "rate": "8%",
+          "uoM": "Numbers, pieces, units",
+          "quantity": 20,
+          "totalValues": 0,
+          "valueSalesExcludingST": 1000,
+          "salesTaxApplicable": 80,
+          "fixedNotifiedValueOrRetailPrice": 0,
+          "salesTaxWithheldAtSource": 0,
+          "extraTax": 0,
+          "furtherTax": 0,
+          "sroScheduleNo": "",
+          "fedPayable": 0,
+          "discount": 0,
+          "saleType": "Services (FED in ST Mode)",
+          "sroItemSerialNo": ""
+        }
+      ]
+    }
+  },
+  {
+    "id": "SN019",
+    "title": "Sale of Services (as per ICT Ordinance)",
+    "description": "Services such as consultancy, software development, and IT solutions taxed under the ICT Ordinance, which can carry distinct rates or exemptions.",
+    "payload": {
+      "invoiceType": "Sale Invoice",
+      "invoiceDate": "2025-04-21",
+      "sellerNTNCNIC": "8885801",
+      "sellerBusinessName": "Company 8",
+      "sellerProvince": "Sindh",
+      "sellerAddress": "Karachi",
+      "buyerNTNCNIC": "1000000000000",
+      "buyerBusinessName": "FERTILIZER MANUFAC IRS NEW",
+      "buyerProvince": "Sindh",
+      "buyerAddress": "Karachi",
+      "invoiceRefNo": "SI-20250421-001",
+      "buyerRegistrationType": "Unregistered",
+      "scenarioId": "SN019",
+      "items": [
+        {
+          "hsCode": "0101.2900",
+          "productDescription": "TEST",
+          "rate": "5%",
+          "uoM": "Numbers, pieces, units",
+          "quantity": 1,
+          "totalValues": 0,
+          "valueSalesExcludingST": 100,
+          "salesTaxApplicable": 5,
+          "fixedNotifiedValueOrRetailPrice": 0,
+          "salesTaxWithheldAtSource": 0,
+          "extraTax": 0,
+          "furtherTax": 0,
+          "sroScheduleNo": "ICTO TABLE I",
+          "fedPayable": 0,
+          "discount": 0,
+          "saleType": "Services",
+          "sroItemSerialNo": "1(ii)(ii)(a)"
+        }
+      ]
+    }
+  },
+  {
+    "id": "SN020",
+    "title": "Sale of Electric Vehicles",
+    "description": "Electric vehicles incentivized through reduced sales tax or exemptions; invoices must categorize them distinctly and declare specs to validate tax benefits.",
+    "payload": {
+      "invoiceType": "Sale Invoice",
+      "invoiceDate": "2025-04-21",
+      "sellerNTNCNIC": "8885801",
+      "sellerBusinessName": "Company 8",
+      "sellerProvince": "Sindh",
+      "sellerAddress": "Karachi",
+      "buyerNTNCNIC": "1000000000000",
+      "buyerBusinessName": "FERTILIZER MANUFAC IRS NEW",
+      "buyerProvince": "Sindh",
+      "buyerAddress": "Karachi",
+      "buyerRegistrationType": "Unregistered",
+      "scenarioId": "SN020",
+      "invoiceRefNo": "SI-20250421-001",
+      "items": [
+        {
+          "hsCode": "0101.2900",
+          "productDescription": "TEST",
+          "rate": "1%",
+          "uoM": "Numbers, pieces, units",
+          "quantity": 122,
+          "totalValues": 0,
+          "valueSalesExcludingST": 1000,
+          "salesTaxApplicable": 10,
+          "salesTaxWithheldAtSource": 0,
+          "fixedNotifiedValueOrRetailPrice": 0,
+          "extraTax": 0,
+          "furtherTax": 0,
+          "sroScheduleNo": "6th Schd Table III",
+          "fedPayable": 0,
+          "discount": 0,
+          "saleType": "Electric Vehicle",
+          "sroItemSerialNo": "20"
+        }
+      ]
+    }
+  },
+  {
+    "id": "SN021",
+    "title": "Sale of Cement / Concrete Block",
+    "description": "Cement and concrete blocks taxed at the standard rate, strictly regulated and subject to input-output ratio tracking under construction regulations.",
+    "payload": {
+      "invoiceType": "Sale Invoice",
+      "invoiceDate": "2025-04-21",
+      "sellerNTNCNIC": "8885801",
+      "sellerBusinessName": "Company 8",
+      "sellerProvince": "Sindh",
+      "sellerAddress": "Karachi",
+      "buyerNTNCNIC": "1000000000000",
+      "buyerBusinessName": "FERTILIZER MANUFAC IRS NEW",
+      "buyerProvince": "Sindh",
+      "buyerAddress": "Karachi",
+      "invoiceRefNo": "SI-20250421-001",
+      "buyerRegistrationType": "Unregistered",
+      "scenarioId": "SN021",
+      "items": [
+        {
+          "hsCode": "2523.1000",
+          "productDescription": "TEST",
+          "rate": "Rs.3",
+          "uoM": "KG",
+          "quantity": 12,
+          "valueSalesExcludingST": 10,
+          "salesTaxApplicable": 36,
+          "fixedNotifiedValueOrRetailPrice": 3,
+          "salesTaxWithheldAtSource": 0,
+          "extraTax": 0,
+          "furtherTax": 0,
+          "sroScheduleNo": "",
+          "fedPayable": 0,
+          "discount": 0,
+          "totalValues": 0,
+          "saleType": "Cement /Concrete Block",
+          "sroItemSerialNo": ""
+        }
+      ]
+    }
+  },
+  {
+    "id": "SN022",
+    "title": "Sale of Potassium Chlorate",
+    "description": "Potassium chlorate (used in matchstick manufacturing) is a sensitive chemical taxed at a fixed amount per kilogram in addition to the standard rate.",
+    "payload": {
+      "invoiceType": "Sale Invoice",
+      "invoiceDate": "2025-04-21",
+      "sellerNTNCNIC": "8885801",
+      "sellerBusinessName": "Company 8",
+      "sellerProvince": "Sindh",
+      "sellerAddress": "Karachi",
+      "buyerNTNCNIC": "1000000000000",
+      "buyerBusinessName": "FERTILIZER MANUFAC IRS NEW",
+      "buyerProvince": "Sindh",
+      "buyerAddress": "Karachi",
+      "buyerRegistrationType": "Unregistered",
+      "scenarioId": "SN022",
+      "invoiceRefNo": "SI-20250421-001",
+      "items": [
+        {
+          "hsCode": "3104.2000",
+          "productDescription": "TEST",
+          "rate": "18% along with rupees 60 per kilogram",
+          "uoM": "KG",
+          "quantity": 1,
+          "valueSalesExcludingST": 100,
+          "fixedNotifiedValueOrRetailPrice": 60,
+          "salesTaxApplicable": 78,
+          "salesTaxWithheldAtSource": 0,
+          "extraTax": 0,
+          "furtherTax": 0,
+          "sroScheduleNo": "EIGHTH SCHEDULE Table 1",
+          "fedPayable": 0,
+          "discount": 0,
+          "totalValues": 0,
+          "saleType": "Potassium Chlorate",
+          "sroItemSerialNo": "56"
+        }
+      ]
+    }
+  },
+  {
+    "id": "SN023",
+    "title": "Sale of CNG",
+    "description": "Compressed Natural Gas sales with regulated pricing and tax treatment (FED + sales tax), typically high-frequency and managed via automated dispensing/billing.",
+    "payload": {
+      "invoiceType": "Sale Invoice",
+      "invoiceDate": "2025-04-21",
+      "sellerNTNCNIC": "8885801",
+      "sellerBusinessName": "Company 8",
+      "sellerProvince": "Sindh",
+      "sellerAddress": "Karachi",
+      "buyerNTNCNIC": "1000000000000",
+      "buyerBusinessName": "FERTILIZER MANUFAC IRS NEW",
+      "buyerProvince": "Sindh",
+      "buyerAddress": "Karachi",
+      "buyerRegistrationType": "Unregistered",
+      "scenarioId": "SN023",
+      "invoiceRefNo": "SI-20250421-001",
+      "items": [
+        {
+          "hsCode": "2711.1990",
+          "productDescription": "TEST",
+          "rate": "Rs.200",
+          "uoM": "KG",
+          "quantity": 123,
+          "valueSalesExcludingST": 234,
+          "fixedNotifiedValueOrRetailPrice": 200,
+          "salesTaxApplicable": 24600,
+          "salesTaxWithheldAtSource": 0,
+          "extraTax": 0,
+          "furtherTax": 0,
+          "sroScheduleNo": "581(1)/2024",
+          "fedPayable": 0,
+          "discount": 0,
+          "totalValues": 0,
+          "saleType": "CNG Sales",
+          "sroItemSerialNo": "Region-I"
+        }
+      ]
+    }
+  },
+  {
+    "id": "SN024",
+    "title": "Sale of Goods Listed in SRO 297(I)/2023",
+    "description": "Goods notified under SRO 297(I)/2023 for reduced, conditional, or fixed-rate taxation (e.g. solar equipment, medical devices); the correct serial number must be applied.",
+    "payload": {
+      "invoiceType": "Sale Invoice",
+      "invoiceDate": "2025-04-21",
+      "sellerNTNCNIC": "8885801",
+      "sellerBusinessName": "Company 8",
+      "sellerProvince": "Sindh",
+      "sellerAddress": "Karachi",
+      "buyerNTNCNIC": "1000000000000",
+      "buyerBusinessName": "FERTILIZER MANUFAC IRS NEW",
+      "buyerProvince": "Sindh",
+      "buyerAddress": "Karachi",
+      "buyerRegistrationType": "Unregistered",
+      "scenarioId": "SN024",
+      "invoiceRefNo": "SI-20250421-001",
+      "items": [
+        {
+          "hsCode": "0101.2100",
+          "productDescription": "TEST",
+          "rate": "25%",
+          "uoM": "Numbers, pieces, units",
+          "quantity": 123,
+          "valueSalesExcludingST": 1000,
+          "fixedNotifiedValueOrRetailPrice": 0,
+          "salesTaxApplicable": 250,
+          "salesTaxWithheldAtSource": 0,
+          "extraTax": 0,
+          "furtherTax": 0,
+          "sroScheduleNo": "297(I)/2023-Table-I",
+          "fedPayable": 0,
+          "discount": 0,
+          "totalValues": 0,
+          "saleType": "Goods as per SRO.297(|)/2023",
+          "sroItemSerialNo": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "SN025",
+    "title": "Drugs Sold at Fixed ST Rate (Serial 81, Eighth Schedule Table 1)",
+    "description": "Pharmaceutical products taxed at a fixed sales tax rate under serial 81 of the Eighth Schedule, kept low to keep medicines affordable regardless of price variations.",
+    "payload": {
+      "invoiceType": "Sale Invoice",
+      "invoiceDate": "2025-05-16",
+      "sellerNTNCNIC": "8885801",
+      "sellerBusinessName": "Company 8",
+      "sellerAddress": "Karachi",
+      "sellerProvince": "Sindh",
+      "buyerNTNCNIC": "1000000000078",
+      "buyerBusinessName": "FERTILIZER MANUFAC IRS NEW",
+      "buyerProvince": "Sindh",
+      "buyerAddress": "Karachi",
+      "buyerRegistrationType": "Unregistered",
+      "invoiceRefNo": "",
+      "scenarioId": "SN025",
+      "items": [
+        {
+          "hsCode": "0101.2100",
+          "productDescription": "TEST",
+          "rate": "0%",
+          "uoM": "Numbers, pieces, units",
+          "quantity": 1,
+          "valueSalesExcludingST": 100,
+          "fixedNotifiedValueOrRetailPrice": 0,
+          "salesTaxApplicable": 0,
+          "salesTaxWithheldAtSource": 0,
+          "extraTax": 0,
+          "furtherTax": 0,
+          "sroScheduleNo": "EIGHTH SCHEDULE Table 1",
+          "fedPayable": 0,
+          "discount": 0,
+          "totalValues": 0,
+          "saleType": "Non-Adjustable Supplies",
+          "sroItemSerialNo": "81"
+        }
+      ]
+    }
+  },
+  {
+    "id": "SN026",
+    "title": "Sale of Goods at Standard Rate to End Consumers by Retailers",
+    "description": "Retailers selling taxable goods to end consumers apply the standard rate at POS (integrated with FBR IRIS); consumers are typically unregistered so no input tax credit applies.",
+    "payload": {
+      "invoiceType": "Sale Invoice",
+      "invoiceDate": "2025-05-16",
+      "sellerNTNCNIC": "7000008",
+      "sellerBusinessName": "Company 8",
+      "sellerProvince": "Sindh",
+      "sellerAddress": "Karachi",
+      "buyerNTNCNIC": "1000000000078",
+      "buyerBusinessName": "FERTILIZER MANUFAC IRS NEW",
+      "buyerProvince": "Sindh",
+      "buyerAddress": "Karachi",
+      "buyerRegistrationType": "Unregistered",
+      "scenarioId": "SN026",
+      "invoiceRefNo": "SI-20250421-001",
+      "items": [
+        {
+          "hsCode": "0101.2100",
+          "productDescription": "TEST",
+          "rate": "18%",
+          "uoM": "Numbers, pieces, units",
+          "quantity": 123,
+          "valueSalesExcludingST": 1000,
+          "fixedNotifiedValueOrRetailPrice": 0,
+          "salesTaxApplicable": 180,
+          "salesTaxWithheldAtSource": 0,
+          "extraTax": 0,
+          "furtherTax": 0,
+          "sroScheduleNo": "",
+          "fedPayable": 0,
+          "discount": 0,
+          "totalValues": 0,
+          "saleType": "Goods at standard rate (default)",
+          "sroItemSerialNo": ""
+        }
+      ]
+    }
+  },
+  {
+    "id": "SN027",
+    "title": "Sale of 3rd Schedule Goods to End Consumers by Retailers",
+    "description": "Retailers selling 3rd Schedule goods (e.g. branded FMCGs) must charge and report sales tax on the maximum retail price (MRP), not the transactional/discounted value.",
+    "payload": {
+      "invoiceType": "Sale Invoice",
+      "invoiceDate": "2025-05-10",
+      "sellerNTNCNIC": "7000008",
+      "sellerBusinessName": "Company 8",
+      "sellerProvince": "Sindh",
+      "sellerAddress": "Karachi",
+      "buyerNTNCNIC": "1000000000078",
+      "buyerBusinessName": "FERTILIZER MANUFAC IRS NEW",
+      "buyerProvince": "Sindh",
+      "buyerAddress": "Karachi",
+      "buyerRegistrationType": "Unregistered",
+      "invoiceRefNo": "",
+      "scenarioId": "SN027",
+      "items": [
+        {
+          "hsCode": "0101.2100",
+          "productDescription": "test",
+          "rate": "18%",
+          "uoM": "Numbers, pieces, units",
+          "quantity": 1,
+          "valueSalesExcludingST": 100,
+          "fixedNotifiedValueOrRetailPrice": 100,
+          "salesTaxApplicable": 18,
+          "salesTaxWithheldAtSource": 0,
+          "extraTax": 0,
+          "furtherTax": 0,
+          "sroScheduleNo": "",
+          "fedPayable": 0,
+          "discount": 0,
+          "totalValues": 0,
+          "saleType": "3rd Schedule Goods",
+          "sroItemSerialNo": ""
+        }
+      ]
+    }
+  },
+  {
+    "id": "SN028",
+    "title": "Sale of Goods at Reduced Rate to End Consumers by Retailers",
+    "description": "Essential goods (e.g. baby milk, books) sold to end consumers at a reduced rate below the standard 18%; products must be correctly classified to qualify for the reduced rate.",
+    "payload": {
+      "invoiceType": "Sale Invoice",
+      "invoiceDate": "2025-05-16",
+      "sellerNTNCNIC": "7000008",
+      "sellerBusinessName": "Company 8",
+      "sellerProvince": "Sindh",
+      "sellerAddress": "Karachi",
+      "buyerNTNCNIC": "1000000000000",
+      "buyerBusinessName": "FERTILIZER MANUFAC IRS NEW",
+      "buyerProvince": "Sindh",
+      "buyerAddress": "Karachi",
+      "invoiceRefNo": "",
+      "buyerRegistrationType": "Unregistered",
+      "scenarioId": "SN028",
+      "items": [
+        {
+          "hsCode": "0101.2100",
+          "productDescription": "TEST",
+          "rate": "1%",
+          "uoM": "Numbers, pieces, units",
+          "quantity": 1,
+          "valueSalesExcludingST": 99.01,
+          "fixedNotifiedValueOrRetailPrice": 100,
+          "salesTaxApplicable": 0.99,
+          "salesTaxWithheldAtSource": 0,
+          "extraTax": "",
+          "furtherTax": 0,
+          "sroScheduleNo": "EIGHTH SCHEDULE Table 1",
+          "fedPayable": 0,
+          "discount": 0,
+          "totalValues": 100,
+          "saleType": "Goods at Reduced Rate",
+          "sroItemSerialNo": "70"
+        }
+      ]
+    }
+  }
+];
+
+const DI_BASE = 'https://gw.fbr.gov.pk/di_data/v1/di/';
+const POS_URLS = {
+  sb:   'https://esp.fbr.gov.pk:8244/DigitalInvoicing/v1/PostInvoiceData_v1',
+  prod: 'https://gw.fbr.gov.pk/pdi/v1/api/DigitalInvoicing/PostInvoiceData_v1'
+};
+
+const TODAY = new Date().toISOString().slice(0, 10);
+
+/* POS samples. invoiceType: 1=Purchase 2=Sale 3=Debit Note 4=Credit Note. */
+const POS_SAMPLES = [
+  {
+    id: 'POS-01',
+    title: 'Standard-rate sale, single item, unregistered walk-in buyer',
+    desc: 'The baseline receipt. Proves your codes (uoM, saleType), the header totals and the tracking-number round trip.',
+    payload: {
+      bposId: '05', invoiceType: '2', invoiceDate: TODAY,
+      ntN_CNIC: '3520212345671', buyerSellerName: 'Walk-in Customer', destinationAddress: 'Lahore',
+      saleType: 1,
+      distributor_NTN_CNIC: '8885801', distributorName: 'Demo Traders (Pvt) Ltd',
+      totalSalesTaxApplicable: 180, totalRetailPrice: 0, totalSTWithheldAtSource: 0,
+      totalExtraTax: 0, totalFEDPayable: 0, totalWithheldIncomeTax: 0, totalCVT: 0,
+      invoiceItemDetails: [{
+        hsCode: '0101.2100', productCode: 'SKU-001', productDescription: 'Demo product',
+        rate: 18, uoM: 5, quantity: 1,
+        valueSalesExcludingST: 1000, salesTaxApplicable: 180, retailPrice: 0,
+        stWithheldAtSource: 0, extraTax: 0, furtherTax: 0, sroScheduleNo: 0,
+        fedPayable: 0, cvt: 0, whiT_1: 0, whiT_2: 0, whiT_Section_1: '', whiT_Section_2: '',
+        totalValues: 1180
+      }]
+    }
+  },
+  {
+    id: 'POS-02',
+    title: 'Multi-item receipt with a discounted line',
+    desc: 'Proves header totals are summed from the items and that a discount reduces valueSalesExcludingST before tax.',
+    payload: {
+      bposId: '05', invoiceType: '2', invoiceDate: TODAY,
+      ntN_CNIC: '3520212345671', buyerSellerName: 'Walk-in Customer', destinationAddress: 'Lahore',
+      saleType: 1,
+      distributor_NTN_CNIC: '8885801', distributorName: 'Demo Traders (Pvt) Ltd',
+      totalSalesTaxApplicable: 270, totalRetailPrice: 0, totalSTWithheldAtSource: 0,
+      totalExtraTax: 0, totalFEDPayable: 0, totalWithheldIncomeTax: 0, totalCVT: 0,
+      invoiceItemDetails: [
+        { hsCode: '0101.2100', productCode: 'SKU-001', productDescription: 'Demo product A',
+          rate: 18, uoM: 5, quantity: 1, valueSalesExcludingST: 1000, salesTaxApplicable: 180,
+          retailPrice: 0, stWithheldAtSource: 0, extraTax: 0, furtherTax: 0, sroScheduleNo: 0,
+          fedPayable: 0, cvt: 0, whiT_1: 0, whiT_2: 0, whiT_Section_1: '', whiT_Section_2: '', totalValues: 1180 },
+        { hsCode: '0101.2100', productCode: 'SKU-002', productDescription: 'Demo product B (100 discount)',
+          rate: 18, uoM: 5, quantity: 1, valueSalesExcludingST: 500, salesTaxApplicable: 90,
+          retailPrice: 0, stWithheldAtSource: 0, extraTax: 0, furtherTax: 0, sroScheduleNo: 0,
+          fedPayable: 0, cvt: 0, whiT_1: 0, whiT_2: 0, whiT_Section_1: '', whiT_Section_2: '', totalValues: 590 }
+      ]
+    }
+  },
+  {
+    id: 'POS-03',
+    title: 'Zero-rated / exempt item',
+    desc: 'Proves a rate of 0 with a real sale value is accepted, and that your code does not skip the line.',
+    payload: {
+      bposId: '05', invoiceType: '2', invoiceDate: TODAY,
+      ntN_CNIC: '3520212345671', buyerSellerName: 'Walk-in Customer', destinationAddress: 'Lahore',
+      saleType: 1,
+      distributor_NTN_CNIC: '8885801', distributorName: 'Demo Traders (Pvt) Ltd',
+      totalSalesTaxApplicable: 0, totalRetailPrice: 0, totalSTWithheldAtSource: 0,
+      totalExtraTax: 0, totalFEDPayable: 0, totalWithheldIncomeTax: 0, totalCVT: 0,
+      invoiceItemDetails: [{
+        hsCode: '0101.2100', productCode: 'SKU-ZR', productDescription: 'Zero-rated product',
+        rate: 0, uoM: 5, quantity: 2, valueSalesExcludingST: 800, salesTaxApplicable: 0,
+        retailPrice: 0, stWithheldAtSource: 0, extraTax: 0, furtherTax: 0, sroScheduleNo: 0,
+        fedPayable: 0, cvt: 0, whiT_1: 0, whiT_2: 0, whiT_Section_1: '', whiT_Section_2: '', totalValues: 800
+      }]
+    }
+  },
+  {
+    id: 'POS-04',
+    title: 'Registered buyer with sales tax withheld at source',
+    desc: 'Proves the withholding leg reduces totalValues and lands in totalSTWithheldAtSource.',
+    payload: {
+      bposId: '05', invoiceType: '2', invoiceDate: TODAY,
+      ntN_CNIC: '2046004', buyerSellerName: 'FERTILIZER MANUFAC IRS NEW', destinationAddress: 'Karachi',
+      saleType: 1,
+      distributor_NTN_CNIC: '8885801', distributorName: 'Demo Traders (Pvt) Ltd',
+      totalSalesTaxApplicable: 180, totalRetailPrice: 0, totalSTWithheldAtSource: 36,
+      totalExtraTax: 0, totalFEDPayable: 0, totalWithheldIncomeTax: 0, totalCVT: 0,
+      invoiceItemDetails: [{
+        hsCode: '0101.2100', productCode: 'SKU-001', productDescription: 'Demo product',
+        rate: 18, uoM: 5, quantity: 1, valueSalesExcludingST: 1000, salesTaxApplicable: 180,
+        retailPrice: 0, stWithheldAtSource: 36, extraTax: 0, furtherTax: 0, sroScheduleNo: 0,
+        fedPayable: 0, cvt: 0, whiT_1: 0, whiT_2: 0, whiT_Section_1: '', whiT_Section_2: '', totalValues: 1144
+      }]
+    }
+  },
+  {
+    id: 'POS-05',
+    title: 'Credit Note (customer return), invoiceType 4',
+    desc: 'The reversal path. Run this after a successful sale so the return has something to mirror.',
+    payload: {
+      bposId: '05', invoiceType: '4', invoiceDate: TODAY,
+      ntN_CNIC: '3520212345671', buyerSellerName: 'Walk-in Customer', destinationAddress: 'Lahore',
+      saleType: 1,
+      distributor_NTN_CNIC: '8885801', distributorName: 'Demo Traders (Pvt) Ltd',
+      totalSalesTaxApplicable: 180, totalRetailPrice: 0, totalSTWithheldAtSource: 0,
+      totalExtraTax: 0, totalFEDPayable: 0, totalWithheldIncomeTax: 0, totalCVT: 0,
+      invoiceItemDetails: [{
+        hsCode: '0101.2100', productCode: 'SKU-001', productDescription: 'Demo product (returned)',
+        rate: 18, uoM: 5, quantity: 1, valueSalesExcludingST: 1000, salesTaxApplicable: 180,
+        retailPrice: 0, stWithheldAtSource: 0, extraTax: 0, furtherTax: 0, sroScheduleNo: 0,
+        fedPayable: 0, cvt: 0, whiT_1: 0, whiT_2: 0, whiT_Section_1: '', whiT_Section_2: '', totalValues: 1180
+      }]
+    }
+  }
+];
+
+/* ------------------------------------------------------------------ *
+ * Helpers
+ * ------------------------------------------------------------------ */
+const $ = id => document.getElementById(id);
+const LS = 'fbr-harness-v1';
+const esc = s => String(s == null ? '' : s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+const STATE_KEYS = ['proxy','timeout','diEnv','diOp','diUrl','diToken','sNtn','sName','sProv','sAddr',
+                    'posEnv','posUrl','posToken','posBpos','posSellerNtn','posSellerName'];
+
+function saveState(){
+  const s = {};
+  STATE_KEYS.forEach(k => s[k] = $(k).value);
+  try { localStorage.setItem(LS, JSON.stringify(s)); } catch(e){}
+}
+function loadState(){
+  let s = {};
+  try { s = JSON.parse(localStorage.getItem(LS) || '{}'); } catch(e){}
+  $('proxy').value = s.proxy !== undefined ? s.proxy : 'http://localhost:8787/proxy';
+  STATE_KEYS.forEach(k => { if (k !== 'proxy' && s[k]) $(k).value = s[k]; });
+}
+
+const diEndpoint = () => DI_BASE + $('diOp').value + ($('diEnv').value === 'sb' ? '_sb' : '');
+function syncDiUrl(){ $('diUrl').value = diEndpoint(); saveState(); }
+function syncPosUrl(){ $('posUrl').value = POS_URLS[$('posEnv').value]; saveState(); }
+
+function parseBody(id, out){
+  try { return JSON.parse($(id).value); }
+  catch(e){ $(out).textContent = 'The request body is not valid JSON.\n\n' + e.message; return null; }
+}
+
+/* Sends through the relay when one is configured, otherwise directly (and explains CORS on failure). */
+async function send(url, token, payload){
+  const proxy = $('proxy').value.trim();
+  const ms = Math.max(5, Number($('timeout').value) || 45) * 1000;
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  const started = Date.now();
+  try {
+    let httpStatus, text;
+    if (proxy) {
+      const r = await fetch(proxy, {
+        method:'POST', signal: ctrl.signal,
+        headers:{ 'Content-Type':'application/json', 'x-fbr-target':url, 'x-fbr-token':token },
+        body: JSON.stringify(payload)
+      });
+      const relay = await r.json();
+      if (relay.relayError) return { ok:false, ms:Date.now()-started, error:'The relay could not reach FBR: ' + relay.relayError };
+      httpStatus = relay.httpStatus; text = relay.body;
+    } else {
+      const r = await fetch(url, {
+        method:'POST', signal: ctrl.signal,
+        headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer ' + token },
+        body: JSON.stringify(payload)
+      });
+      httpStatus = r.status; text = await r.text();
+    }
+    let json = null;
+    try { json = JSON.parse(text); } catch(e){}
+    return { ok:true, ms:Date.now()-started, httpStatus, text, json };
+  } catch (e) {
+    const aborted = e.name === 'AbortError';
+    return {
+      ok:false, ms:Date.now()-started,
+      error: aborted
+        ? 'Timed out after ' + (ms/1000) + 's. If this was a POST, FBR may still have accepted it — check before resending.'
+        : (proxy
+            ? 'Could not reach the relay at ' + proxy + '. Is "node fbr-proxy.js" running?'
+            : 'Blocked by CORS. FBR does not allow browser calls. Run "node fbr-proxy.js" and set the Proxy URL above.')
+    };
+  } finally { clearTimeout(timer); }
+}
+
+function curlFor(url, token, payload){
+  return "curl -X POST '" + url + "' \\\n" +
+         "  -H 'Authorization: Bearer " + (token || 'YOUR_TOKEN') + "' \\\n" +
+         "  -H 'Content-Type: application/json' \\\n" +
+         "  -d '" + JSON.stringify(payload).replace(/'/g, "'\\''") + "'";
+}
+async function copy(text, btn){
+  try { await navigator.clipboard.writeText(text); }
+  catch(e){ const t=document.createElement('textarea'); t.value=text; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); }
+  const old = btn.textContent; btn.textContent = 'Copied'; setTimeout(() => btn.textContent = old, 1200);
+}
+function download(name, text, type){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], { type: type || 'text/plain' }));
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
+/* ------------------------------------------------------------------ *
+ * Verdicts — the acceptance checks the guides insist on
+ * ------------------------------------------------------------------ */
+/** DI: header statusCode "00" AND status Valid AND every item "00" (DI guide §8.2). */
+function diVerdict(res){
+  if (!res.ok) return { pass:false, detail:res.error, invoice:'' };
+  if (res.httpStatus === 401) return { pass:false, detail:'HTTP 401 — the token is invalid, missing, or wrong for this environment.', invoice:'' };
+  if (res.httpStatus >= 400) return { pass:false, detail:'HTTP ' + res.httpStatus + ' — ' + (res.text || '').slice(0,300), invoice:'' };
+  if (!res.json) return { pass:false, detail:'FBR replied with non-JSON (gateway or maintenance page): ' + (res.text||'').slice(0,300), invoice:'' };
+
+  const v = res.json.validationResponse;
+  if (!v) return { pass:false, detail:'No validationResponse in the reply.', invoice:'' };
+
+  const items = v.invoiceStatuses || [];
+  const itemErrors = items.filter(i => String(i.statusCode) !== '00')
+    .map(i => 'Item #' + (i.itemSNo || '?') + ': [' + (i.errorCode || '') + '] ' + (i.error || 'rejected'));
+  const headerBad = String(v.statusCode) !== '00' || String(v.status || '').toLowerCase() === 'invalid';
+
+  if (!headerBad && itemErrors.length === 0)
+    return { pass:true, detail:'Valid.', invoice: res.json.invoiceNumber || '(validate only — no invoice number)' };
+
+  const errs = [];
+  if (String(v.statusCode) !== '00' && v.error) errs.push('[' + (v.errorCode||'') + '] ' + v.error);
+  errs.push.apply(errs, itemErrors);
+  if (!errs.length) errs.push('Rejected with status "' + (v.status||'') + '" and no error text.');
+  return { pass:false, detail: errs.join(' | '), invoice:'' };
+}
+
+/** POS: HTTP 2xx AND body statusCode 200 AND a non-empty result (POS guide §8.2). */
+function posVerdict(res){
+  if (!res.ok) return { pass:false, detail:res.error, tracking:'' };
+  if (res.httpStatus === 401) return { pass:false, detail:'HTTP 401 — the token is invalid, missing, or wrong for this environment.', tracking:'' };
+  if (res.httpStatus >= 400) return { pass:false, detail:'HTTP ' + res.httpStatus + ' — ' + (res.text || '').slice(0,300), tracking:'' };
+  if (!res.json) return { pass:false, detail:'FBR replied with non-JSON (gateway or maintenance page): ' + (res.text||'').slice(0,300), tracking:'' };
+  if (Number(res.json.statusCode) !== 200)
+    return { pass:false, detail:'Body statusCode ' + res.json.statusCode + ' — ' + (res.json.errorMessage || 'rejected with no message'), tracking:'' };
+  if (!res.json.result)
+    return { pass:false, detail:'Accepted but no tracking number returned — do not treat this as filed.', tracking:'' };
+  return { pass:true, detail:'Accepted.', tracking: res.json.result };
+}
+
+/* ------------------------------------------------------------------ *
+ * DI tester
+ * ------------------------------------------------------------------ */
+const diRows = [];
+
+function fillScenarios(){
+  $('diScenario').innerHTML = SCENARIOS
+    .map(s => '<option value="' + s.id + '">' + s.id + ' — ' + esc(s.title) + '</option>').join('');
+  describeScenario();
+}
+function describeScenario(){
+  const s = SCENARIOS.find(x => x.id === $('diScenario').value);
+  $('diScenarioDesc').textContent = s ? s.description : '';
+}
+function applySeller(obj){
+  const map = { sellerNTNCNIC:'sNtn', sellerBusinessName:'sName', sellerProvince:'sProv', sellerAddress:'sAddr' };
+  for (const k in map) { const v = $(map[k]).value.trim(); if (v) obj[k] = v; }
+  return obj;
+}
+function scenarioPayload(id){
+  const s = SCENARIOS.find(x => x.id === id);
+  const p = applySeller(JSON.parse(JSON.stringify(s.payload)));
+  if ($('diEnv').value === 'prod') delete p.scenarioId;   // scenarioId is sandbox-only
+  else p.scenarioId = s.id;
+  return p;
+}
+function loadScenario(){
+  if (!$('diScenario').value) return;
+  $('diBody').value = JSON.stringify(scenarioPayload($('diScenario').value), null, 2);
+}
+function renderDiRows(){
+  const tb = $('diResults');
+  if (!diRows.length) { tb.innerHTML = '<tr><td colspan="4" class="muted">No runs yet.</td></tr>'; return; }
+  tb.innerHTML = diRows.map(r =>
+    '<tr><td><code>' + esc(r.id) + '</code></td>' +
+    '<td><span class="pill ' + (r.pass ? 'ok">PASS' : 'bad">FAIL') + '</span></td>' +
+    '<td><code>' + esc(r.invoice) + '</code></td>' +
+    '<td>' + esc(r.detail) + '</td></tr>').join('');
+}
+async function runDi(scenarioId, bodyOverride){
+  const url = $('diUrl').value.trim();
+  const token = $('diToken').value.trim();
+  if (!token) { $('diOut').textContent = 'Paste your DI token first.'; return null; }
+  const payload = bodyOverride || scenarioPayload(scenarioId);
+
+  $('diOut').textContent = 'Sending ' + scenarioId + ' to ' + url + ' …';
+  const res = await send(url, token, payload);
+  const v = diVerdict(res);
+
+  $('diOut').textContent =
+    scenarioId + '  ' + (v.pass ? 'PASS' : 'FAIL') + '   (' + res.ms + 'ms' +
+    (res.httpStatus ? ', HTTP ' + res.httpStatus : '') + ')\n' +
+    v.detail + '\n\n--- request ---\n' + JSON.stringify(payload, null, 2) +
+    '\n\n--- response ---\n' + (res.ok ? (res.json ? JSON.stringify(res.json, null, 2) : res.text) : res.error);
+
+  const i = diRows.findIndex(r => r.id === scenarioId);
+  const row = { id:scenarioId, pass:v.pass, invoice:v.invoice, detail:v.detail };
+  if (i >= 0) diRows[i] = row; else diRows.push(row);
+  renderDiRows();
+  return v;
+}
+
+$('diScenario').addEventListener('change', () => { describeScenario(); loadScenario(); });
+$('diEnv').addEventListener('change', () => { syncDiUrl(); loadScenario(); });
+$('diOp').addEventListener('change', syncDiUrl);
+$('diLoad').addEventListener('click', loadScenario);
+$('applySeller').addEventListener('click', () => {
+  const o = parseBody('diBody','diOut'); if (!o) return;
+  $('diBody').value = JSON.stringify(applySeller(o), null, 2);
+});
+$('diFormat').addEventListener('click', () => {
+  const o = parseBody('diBody','diOut'); if (o) $('diBody').value = JSON.stringify(o, null, 2);
+});
+$('diCurl').addEventListener('click', e => {
+  const o = parseBody('diBody','diOut'); if (o) copy(curlFor($('diUrl').value.trim(), $('diToken').value.trim(), o), e.target);
+});
+$('diRun').addEventListener('click', async e => {
+  const o = parseBody('diBody','diOut'); if (!o) return;
+  e.target.disabled = true;
+  await runDi(o.scenarioId || $('diScenario').value, o);
+  e.target.disabled = false;
+});
+$('diRunAll').addEventListener('click', async e => {
+  if ($('diOp').value === 'postinvoicedata' &&
+      !confirm('This POSTs all ' + SCENARIOS.length + ' scenarios — each creates a real FBR invoice in this environment. Continue?')) return;
+  e.target.disabled = true; $('diRun').disabled = true;
+  diRows.length = 0; renderDiRows();
+  for (const s of SCENARIOS) {
+    $('diScenario').value = s.id; describeScenario(); loadScenario();
+    await runDi(s.id, null);
+  }
+  const passed = diRows.filter(r => r.pass).length;
+  $('diOut').textContent = 'Finished. ' + passed + ' / ' + diRows.length + ' passed. See the results table below.';
+  e.target.disabled = false; $('diRun').disabled = false;
+});
+$('diExport').addEventListener('click', () => {
+  const csv = ['Scenario,Verdict,InvoiceNumber,Detail']
+    .concat(diRows.map(r => [r.id, r.pass?'PASS':'FAIL', r.invoice, '"' + String(r.detail).replace(/"/g,'""') + '"'].join(',')))
+    .join('\n');
+  download('fbr-di-results-' + TODAY + '.csv', csv, 'text/csv');
+});
+
+/* ------------------------------------------------------------------ *
+ * POS tester
+ * ------------------------------------------------------------------ */
+const posRows = [];
+
+function fillPosSamples(){
+  $('posSample').innerHTML = POS_SAMPLES
+    .map(s => '<option value="' + s.id + '">' + s.id + ' — ' + esc(s.title) + '</option>').join('');
+  describePosSample();
+}
+function describePosSample(){
+  const s = POS_SAMPLES.find(x => x.id === $('posSample').value);
+  $('posSampleDesc').textContent = s ? s.desc : '';
+}
+function applyPosIdentity(p){
+  const b = $('posBpos').value.trim(); if (b) p.bposId = b;
+  const n = $('posSellerNtn').value.trim(); if (n) p.distributor_NTN_CNIC = n;
+  const nm = $('posSellerName').value.trim(); if (nm) p.distributorName = nm;
+  return p;
+}
+function loadPosSample(){
+  const s = POS_SAMPLES.find(x => x.id === $('posSample').value);
+  if (!s) return;
+  $('posBody').value = JSON.stringify(applyPosIdentity(JSON.parse(JSON.stringify(s.payload))), null, 2);
+}
+/* Header totals must equal the sum of the item lines — recompute rather than trust the sample. */
+function recomputeTotals(){
+  const p = parseBody('posBody','posOut'); if (!p) return;
+  const it = p.invoiceItemDetails || [];
+  const sum = f => Math.round(it.reduce((a,x) => a + (Number(x[f]) || 0), 0) * 100) / 100;
+  p.totalSalesTaxApplicable = sum('salesTaxApplicable');
+  p.totalRetailPrice        = sum('retailPrice');
+  p.totalSTWithheldAtSource = sum('stWithheldAtSource');
+  p.totalExtraTax           = sum('extraTax');
+  p.totalFEDPayable         = sum('fedPayable');
+  p.totalCVT                = sum('cvt');
+  p.totalWithheldIncomeTax  = Math.round(it.reduce((a,x) => a + (Number(x.whiT_1)||0) + (Number(x.whiT_2)||0), 0) * 100) / 100;
+  $('posBody').value = JSON.stringify(p, null, 2);
+  $('posOut').textContent = 'Header totals recomputed from the ' + it.length + ' item line(s).';
+}
+function renderPosRows(){
+  const tb = $('posResults');
+  if (!posRows.length) { tb.innerHTML = '<tr><td colspan="4" class="muted">No runs yet.</td></tr>'; return; }
+  tb.innerHTML = posRows.map(r =>
+    '<tr><td><code>' + esc(r.id) + '</code></td>' +
+    '<td><span class="pill ' + (r.pass ? 'ok">PASS' : 'bad">FAIL') + '</span></td>' +
+    '<td><code>' + esc(r.tracking) + '</code></td>' +
+    '<td>' + esc(r.detail) + '</td></tr>').join('');
+}
+
+$('posSample').addEventListener('change', () => { describePosSample(); loadPosSample(); });
+$('posEnv').addEventListener('change', syncPosUrl);
+$('posLoad').addEventListener('click', loadPosSample);
+$('posFormat').addEventListener('click', () => {
+  const o = parseBody('posBody','posOut'); if (o) $('posBody').value = JSON.stringify(o, null, 2);
+});
+$('posTotals').addEventListener('click', recomputeTotals);
+$('posCurl').addEventListener('click', e => {
+  const o = parseBody('posBody','posOut'); if (o) copy(curlFor($('posUrl').value.trim(), $('posToken').value.trim(), o), e.target);
+});
+$('posRun').addEventListener('click', async e => {
+  const p = parseBody('posBody','posOut'); if (!p) return;
+  const token = $('posToken').value.trim();
+  if (!token) { $('posOut').textContent = 'Paste your POS token first.'; return; }
+  if ($('posEnv').value === 'prod' &&
+      !confirm('This is the PRODUCTION endpoint. POS has no dry run — this files a real receipt with FBR. Continue?')) return;
+
+  e.target.disabled = true;
+  const url = $('posUrl').value.trim();
+  const id = $('posSample').value;
+  $('posOut').textContent = 'Sending to ' + url + ' …';
+  const res = await send(url, token, p);
+  const v = posVerdict(res);
+  $('posOut').textContent =
+    id + '  ' + (v.pass ? 'PASS' : 'FAIL') + '   (' + res.ms + 'ms' +
+    (res.httpStatus ? ', HTTP ' + res.httpStatus : '') + ')\n' + v.detail +
+    '\n\n--- request ---\n' + JSON.stringify(p, null, 2) +
+    '\n\n--- response ---\n' + (res.ok ? (res.json ? JSON.stringify(res.json, null, 2) : res.text) : res.error);
+  const i = posRows.findIndex(r => r.id === id);
+  const row = { id:id, pass:v.pass, tracking:v.tracking, detail:v.detail };
+  if (i >= 0) posRows[i] = row; else posRows.push(row);
+  renderPosRows();
+  e.target.disabled = false;
+});
+
+/* ------------------------------------------------------------------ *
+ * Docs: per-view table of contents built from the h2s
+ * ------------------------------------------------------------------ */
+const slug = t => t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
+
+function buildTocs(){
+  document.querySelectorAll('.doclayout').forEach(layout => {
+    const article = layout.querySelector('article.doc');
+    const aside = layout.querySelector('aside.toc');
+    const seen = {};
+    const links = [];
+    article.querySelectorAll('h2').forEach(h => {
+      let id = slug(h.textContent);
+      if (seen[id]) id += '-' + (++seen[id]); else seen[id] = 1;
+      h.id = id;
+      links.push('<a href="#' + id + '">' + esc(h.textContent) + '</a>');
+    });
+    aside.innerHTML = links.length ? '<h4>On this page</h4>' + links.join('') : '';
+  });
+}
+
+/* Highlights the section currently in view. */
+function watchHeadings(){
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      if (!en.isIntersecting) return;
+      const layout = en.target.closest('.doclayout');
+      if (!layout) return;
+      layout.querySelectorAll('aside.toc a').forEach(a =>
+        a.classList.toggle('here', a.getAttribute('href') === '#' + en.target.id));
+    });
+  }, { rootMargin: '-60px 0px -75% 0px' });
+  document.querySelectorAll('article.doc h2').forEach(h => obs.observe(h));
+}
+
+/* ------------------------------------------------------------------ *
+ * View routing
+ * ------------------------------------------------------------------ */
+const VIEWS = ['overview','di-guide','pos-guide','scenarios','di-test','pos-test'];
+
+function show(view, keepScroll){
+  if (VIEWS.indexOf(view) === -1) view = 'overview';
+  VIEWS.forEach(v => $('view-' + v).classList.toggle('on', v === view));
+  document.querySelectorAll('nav.main button').forEach(b =>
+    b.classList.toggle('on', b.dataset.view === view));
+  // The connection panel is shared by both testers.
+  $('connection').classList.toggle('hide', view !== 'di-test' && view !== 'pos-test');
+  if (!keepScroll) window.scrollTo(0, 0);
+  try { history.replaceState(null, '', '#' + view); } catch(e){}
+}
+
+document.querySelectorAll('nav.main button').forEach(b =>
+  b.addEventListener('click', () => show(b.dataset.view)));
+
+/* A cross-reference inside a guide jumps to that guide's view. */
+document.addEventListener('click', e => {
+  const a = e.target.closest('a.xref');
+  if (!a) return;
+  e.preventDefault();
+  show(a.dataset.view);
+});
+
+/* ------------------------------------------------------------------ *
+ * Init
+ * ------------------------------------------------------------------ */
+$('copyProxy').addEventListener('click', e => copy($('proxySrc').textContent, e.target));
+$('dlProxy').addEventListener('click', () => download('fbr-proxy.js', $('proxySrc').textContent, 'text/javascript'));
+
+document.querySelectorAll('input,select').forEach(el => el.addEventListener('change', saveState));
+
+fillScenarios();
+fillPosSamples();
+loadState();
+if (!$('diUrl').value) syncDiUrl();
+if (!$('posUrl').value) syncPosUrl();
+loadScenario();
+loadPosSample();
+buildTocs();
+watchHeadings();
+
+/* A #hash naming a view opens it; anything else is a heading anchor inside the docs. */
+const hash = (location.hash || '').replace('#', '');
+if (VIEWS.indexOf(hash) !== -1) {
+  show(hash);
+} else if (hash && document.getElementById(hash)) {
+  const layout = document.getElementById(hash).closest('.view');
+  show(layout ? layout.id.replace('view-', '') : 'overview', true);
+  document.getElementById(hash).scrollIntoView();
+} else {
+  show('overview');
+}
+</script>
+</body>
+</html>
