@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FBR Integration Kit — start here</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --panel:#fff; --ink:#111827; --muted:#6b7280; --line:#e5e7eb;
+    --brand:#0f766e; --brand-dk:#0b3b39;
+    --warn:#92400e; --warn-bg:#fffbeb; --warn-line:#fde68a;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:15px/1.6 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  header{background:var(--brand-dk);color:#fff;padding:26px 20px}
+  header .inner{max-width:900px;margin:0 auto}
+  header h1{margin:0;font-size:24px;font-weight:650;letter-spacing:-.01em}
+  header p{margin:6px 0 0;font-size:14px;color:#a7d5d0;max-width:640px}
+  .wrap{max-width:900px;margin:0 auto;padding:26px 20px 70px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:22px 24px;margin-bottom:18px}
+  .card h2{margin:0 0 4px;font-size:17px}
+  .card p{margin:6px 0;color:var(--muted);font-size:14px}
+  .card p.lead{color:var(--ink)}
+  a.cta{display:inline-block;margin-top:14px;background:var(--brand);color:#fff;text-decoration:none;
+        padding:11px 22px;border-radius:9px;font-weight:650;font-size:15px}
+  a.cta:hover{background:#0b5f58}
+  h3.sec{margin:26px 0 10px;font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+  ul.files{list-style:none;margin:0;padding:0}
+  ul.files li{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+              padding:13px 16px;margin-bottom:9px}
+  ul.files a{color:var(--brand);text-decoration:none;font-weight:650;font-family:var(--mono);font-size:13.5px}
+  ul.files a:hover{text-decoration:underline}
+  ul.files span{display:block;color:var(--muted);font-size:13px;margin-top:3px}
+  ul.files li.plain{background:transparent;border-style:dashed}
+  ul.files li.plain code{color:var(--ink);font-weight:650;font-size:13.5px}
+  code{font-family:var(--mono);font-size:.88em;background:#f1f3f5;padding:1px 5px;
+       border-radius:4px;border:1px solid #e6e8ea}
+  .note{background:var(--warn-bg);border:1px solid var(--warn-line);color:var(--warn);
+        padding:12px 15px;border-radius:10px;font-size:13.5px;margin-top:16px}
+  .note strong{font-weight:700}
+  ol.steps{margin:8px 0 0;padding-left:20px}
+  ol.steps li{margin:7px 0}
+  footer{max-width:900px;margin:0 auto;padding:0 20px 40px;color:var(--muted);font-size:12.5px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="inner">
+    <h1>FBR Integration Kit</h1>
+    <p>Everything needed to file invoices with Pakistan&rsquo;s Federal Board of Revenue &mdash;
+       Digital Invoicing (DI) and POS Digital Invoicing &mdash; from registration to a verified
+       production go-live.</p>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="card">
+    <h2>Start here</h2>
+    <p class="lead">One offline page carries both guides, the 28 test scenarios, and a working tester.
+       No install, no internet needed to read it.</p>
+    <a class="cta" href="fbr-test-harness.html">Open the FBR Integration Kit &rarr;</a>
+    <div class="note">
+      <strong>&ldquo;Test harness&rdquo;</strong> is the engineering term for a rig that feeds prepared
+      inputs into a system and reports what came back. It is a testing tool, not part of your product.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>The short version of the job</h2>
+    <ol class="steps">
+      <li><strong>Work out which channel applies</strong> &mdash; DI (sales-tax invoices) or POS (retail
+          receipts), or both. The comparison table is on the kit&rsquo;s Overview tab.</li>
+      <li><strong>Get the sandbox token</strong> from IRIS. This is portal work, not code, and it takes
+          days &mdash; start it before writing anything.</li>
+      <li><strong>Import FBR&rsquo;s lookup lists</strong> (HS code, UoM, sale type, rate, SRO, province)
+          onto your product and customer masters as dropdowns. Skipping this causes most production
+          rejections.</li>
+      <li><strong>Prove the payload</strong> in the tester before wiring it into the application.</li>
+      <li><strong>Pass the assigned scenarios</strong>, get the production token, post one real
+          low-value document, and verify it in IRIS.</li>
+    </ol>
+  </div>
+
+  <h3 class="sec">Read on their own</h3>
+  <ul class="files">
+    <li>
+      <a href="fbr-test-harness.html">fbr-test-harness.html</a>
+      <span>The whole kit as one offline page: both guides to read, plus a live tester &mdash; paste a
+            token, load a scenario, post or validate, get a PASS/FAIL table and a CSV.</span>
+    </li>
+    <li>
+      <a href="README.md">README.md</a>
+      <span>The pack index in plain text: which channel to build, the order of work, and the five
+            traps common to both.</span>
+    </li>
+    <li>
+      <a href="fbr-digital-invoice-developer-guide.md">fbr-digital-invoice-developer-guide.md</a>
+      <span>Digital Invoicing, end to end &mdash; registration, sandbox token, endpoints, every payload
+            field, the calculation formula, response handling, error codes, printing, go-live checklist.</span>
+    </li>
+    <li>
+      <a href="fbr-pos-digital-invoice-developer-guide.md">fbr-pos-digital-invoice-developer-guide.md</a>
+      <span>POS Digital Invoicing, end to end &mdash; terminal registration and BPOS ID, numeric code
+            lists, payload with a worked example, response handling, printing, go-live checklist.</span>
+    </li>
+    <li>
+      <a href="fbr-di-sandbox-scenarios.md">fbr-di-sandbox-scenarios.md</a>
+      <span>The 28 DI test scenarios (SN001&ndash;SN028) explained and grouped by what each one
+            exercises, plus the failure&rarr;fix table.</span>
+    </li>
+  </ul>
+
+  <h3 class="sec">Used by the tooling</h3>
+  <ul class="files">
+    <li>
+      <a href="fbr-di-sandbox-scenarios.json">fbr-di-sandbox-scenarios.json</a>
+      <span>The 28 scenarios as ready-to-post request bodies. Already embedded in the kit page &mdash;
+            take this file if you want them in Postman or your own tests.</span>
+    </li>
+    <li>
+      <a href="fbr-proxy.js">fbr-proxy.js</a>
+      <span>A ~60-line Node relay. The tester needs it, because a browser cannot call FBR directly
+            (FBR sends no CORS headers). Run <code>node fbr-proxy.js</code> and leave it running.</span>
+    </li>
+    <li class="plain">
+      <code>harness.template.html</code> &nbsp;+&nbsp; <code>build-harness.js</code>
+      <span>How the single page is produced. Edit the markdown, then run
+            <code>node build-harness.js</code> to regenerate it. Nothing to install.</span>
+    </li>
+  </ul>
+
+  <div class="note" style="margin-top:22px">
+    <strong>Before touching production:</strong> tokens are five-year credentials for a taxpayer&rsquo;s
+    identity &mdash; keep them server-side, never in a browser, a mobile binary, or git. And an invoice
+    FBR has accepted cannot be edited or deleted, only reversed with a debit/credit note, so lock it in
+    your database the moment FBR accepts it.
+  </div>
+
+</div>
+
+<footer>
+  Sources: FBR Digital Invoicing API Technical Specification v1.12 and the POS Digital Invoicing
+  technical specification, plus behaviour observed against the live sandbox. Confirm endpoint paths
+  and IRIS menu labels against the spec issued with your own token &mdash; FBR moves them between releases.
+</footer>
+
+</body>
+</html>

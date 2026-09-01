@@ -9,8 +9,12 @@ install, no network.
 
 ## Files
 
+*"Test harness" is the engineering term for a rig that feeds prepared inputs into a system and
+reports what came back — a testing tool, not part of your product.*
+
 | File | What it is |
 |---|---|
+| `index.html` | The cover page for this folder: what to open first, the job in five steps, and every file with a one-line description. |
 | `fbr-test-harness.html` | **The whole kit as one offline page.** Both guides to read, and a live tester: paste a token, load a scenario, post or validate, get a PASS/FAIL table and a CSV. Covers DI and POS. |
 | `fbr-digital-invoice-developer-guide.md` | **Digital Invoicing (DI)** — the full guide. Registration, sandbox token, payload, calculations, response handling, error codes, go-live. |
 | `fbr-pos-digital-invoice-developer-guide.md` | **POS Digital Invoicing** — the full guide. Terminal registration, BPOS ID, payload, code lists, response handling, go-live. |
