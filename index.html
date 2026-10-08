@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>FBR Integration Kit — start here</title>
+<title>FBR Integration Kit</title>
 <style>
   :root{
     --bg:#f6f7f9; --panel:#fff; --ink:#111827; --muted:#6b7280; --line:#e5e7eb;
@@ -51,8 +51,8 @@
   <div class="inner">
     <h1>FBR Integration Kit</h1>
     <p>Everything needed to file invoices with Pakistan&rsquo;s Federal Board of Revenue &mdash;
-       Digital Invoicing (DI) and POS Digital Invoicing &mdash; from registration to a verified
-       production go-live.</p>
+       Digital Invoicing (DI), POS Digital Invoicing and IMS (Tier-1 / Income Tax POS, used by
+       hospitals and clinics) &mdash; from registration to a verified production go-live.</p>
   </div>
 </header>
 
@@ -60,7 +60,7 @@
 
   <div class="card">
     <h2>Start here</h2>
-    <p class="lead">One offline page carries both guides, the 28 test scenarios, and a working tester.
+    <p class="lead">One offline page carries all three guides, the DI and IMS test scenarios, and a working tester for each channel.
        No install, no internet needed to read it.</p>
     <a class="cta" href="fbr-test-harness.html">Open the FBR Integration Kit &rarr;</a>
     <div class="note">
@@ -72,8 +72,9 @@
   <div class="card">
     <h2>The short version of the job</h2>
     <ol class="steps">
-      <li><strong>Work out which channel applies</strong> &mdash; DI (sales-tax invoices) or POS (retail
-          receipts), or both. The comparison table is on the kit&rsquo;s Overview tab.</li>
+      <li><strong>Work out which channel applies</strong> &mdash; DI (sales-tax invoices), POS (retail
+          receipts) or IMS (Tier-1 retail and income-tax POS: hospitals, clinics, labs). The comparison
+          table is on the kit&rsquo;s Overview tab.</li>
       <li><strong>Get the sandbox token</strong> from IRIS. This is portal work, not code, and it takes
           days &mdash; start it before writing anything.</li>
       <li><strong>Import FBR&rsquo;s lookup lists</strong> (HS code, UoM, sale type, rate, SRO, province)
@@ -89,8 +90,8 @@
   <ul class="files">
     <li>
       <a href="fbr-test-harness.html">fbr-test-harness.html</a>
-      <span>The whole kit as one offline page: both guides to read, plus a live tester &mdash; paste a
-            token, load a scenario, post or validate, get a PASS/FAIL table and a CSV.</span>
+      <span>The whole kit as one offline page: all three guides to read, plus a live tester for DI, POS
+            and IMS &mdash; paste a token, load a scenario, post or validate, get a PASS/FAIL table and a CSV.</span>
     </li>
     <li>
       <a href="README.md">README.md</a>
@@ -108,6 +109,17 @@
             lists, payload with a worked example, response handling, printing, go-live checklist.</span>
     </li>
     <li>
+      <a href="fbr-ims-fiscal-component-developer-guide.md">fbr-ims-fiscal-component-developer-guide.md</a>
+      <span>IMS (Tier-1 / Income Tax POS), end to end &mdash; POS Client Registration and test POS ID,
+            cloud API or local Windows component, payload with a hospital example, response handling,
+            hospital billing rules, printing, go-live checklist.</span>
+    </li>
+    <li>
+      <a href="FBR%20Techincal%20assistant.pdf">FBR Techincal assistant.pdf</a>
+      <span>FBR&rsquo;s original IMS / Tier-1 retailer technical specification, which the IMS guide is
+            based on (and corrects where the PDF has errors).</span>
+    </li>
+    <li>
       <a href="fbr-di-sandbox-scenarios.md">fbr-di-sandbox-scenarios.md</a>
       <span>The 28 DI test scenarios (SN001&ndash;SN028) explained and grouped by what each one
             exercises, plus the failure&rarr;fix table.</span>
@@ -120,6 +132,11 @@
       <a href="fbr-di-sandbox-scenarios.json">fbr-di-sandbox-scenarios.json</a>
       <span>The 28 scenarios as ready-to-post request bodies. Already embedded in the kit page &mdash;
             take this file if you want them in Postman or your own tests.</span>
+    </li>
+    <li>
+      <a href="fbr-ims-test-scenarios.json">fbr-ims-test-scenarios.json</a>
+      <span>8 IMS bills ready to post &mdash; six hospital cases and two retail ones. Already embedded in
+            the kit page&rsquo;s IMS Tester.</span>
     </li>
     <li>
       <a href="fbr-proxy.js">fbr-proxy.js</a>
@@ -143,8 +160,9 @@
 </div>
 
 <footer>
-  Sources: FBR Digital Invoicing API Technical Specification v1.12 and the POS Digital Invoicing
-  technical specification, plus behaviour observed against the live sandbox. Confirm endpoint paths
+  Sources: FBR Digital Invoicing API Technical Specification v1.12, the POS Digital Invoicing
+  technical specification, and FBR&rsquo;s Software Fiscal Component (IMS) specification for Tier-1
+  retailers, plus behaviour observed against the live sandbox. Confirm endpoint paths
   and IRIS menu labels against the spec issued with your own token &mdash; FBR moves them between releases.
 </footer>
 

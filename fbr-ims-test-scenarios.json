@@ -1,0 +1,364 @@
+[
+  {
+    "id": "IMS-H01",
+    "title": "OPD consultation above Rs 1,500 (cash)",
+    "description": "Baseline hospital bill. One specialist consultation at Rs 2,500, serial 68(i), 0% under heading 9815.1000. Proves POSID, USIN, totals and the Fiscal Invoice Number round trip. Run this first; IMS-H05 refunds it.",
+    "payload": {
+      "InvoiceNumber": "",
+      "POSID": 110014,
+      "USIN": "OPD-TEST-0001",
+      "RefUSIN": null,
+      "DateTime": "2026-10-08 11:00:00",
+      "BuyerName": "Test Patient",
+      "BuyerNTN": "",
+      "BuyerCNIC": "3520212345671",
+      "BuyerPhoneNumber": "03001234567",
+      "TotalSaleValue": 2500,
+      "TotalTaxCharged": 0.0,
+      "TotalQuantity": 1,
+      "Discount": 0,
+      "FurtherTax": 0,
+      "TotalBillAmount": 2500.0,
+      "PaymentMode": 1,
+      "InvoiceType": 1,
+      "Items": [
+        {
+          "ItemCode": "CONS-SPEC",
+          "ItemName": "Specialist consultation",
+          "PCTCode": "98151000",
+          "Quantity": 1,
+          "TaxRate": 0,
+          "SaleValue": 2500,
+          "Discount": 0,
+          "TaxCharged": 0.0,
+          "FurtherTax": 0,
+          "TotalAmount": 2500.0,
+          "InvoiceType": 1,
+          "RefUSIN": null
+        }
+      ]
+    }
+  },
+  {
+    "id": "IMS-H02",
+    "title": "Consultation at or below Rs 1,500",
+    "description": "A Rs 1,200 general consultation, outside serial 68. Confirm its tax treatment with your advisor; the sample sends 0%. Proves low-value bills are fiscalized too, not skipped.",
+    "payload": {
+      "InvoiceNumber": "",
+      "POSID": 110014,
+      "USIN": "OPD-TEST-0002",
+      "RefUSIN": null,
+      "DateTime": "2026-10-08 11:00:00",
+      "BuyerName": "Test Patient",
+      "BuyerNTN": "",
+      "BuyerCNIC": "3520212345671",
+      "BuyerPhoneNumber": "03001234567",
+      "TotalSaleValue": 1200,
+      "TotalTaxCharged": 0.0,
+      "TotalQuantity": 1,
+      "Discount": 0,
+      "FurtherTax": 0,
+      "TotalBillAmount": 1200.0,
+      "PaymentMode": 1,
+      "InvoiceType": 1,
+      "Items": [
+        {
+          "ItemCode": "CONS-GP",
+          "ItemName": "General consultation",
+          "PCTCode": "98151000",
+          "Quantity": 1,
+          "TaxRate": 0,
+          "SaleValue": 1200,
+          "Discount": 0,
+          "TaxCharged": 0.0,
+          "FurtherTax": 0,
+          "TotalAmount": 1200.0,
+          "InvoiceType": 1,
+          "RefUSIN": null
+        }
+      ]
+    }
+  },
+  {
+    "id": "IMS-H03",
+    "title": "IPD private room above Rs 6,000/day, 3 days (card)",
+    "description": "Room charges of Rs 8,000/day for 3 days, serial 68(ii). One line with Quantity = days. Proves quantity-based lines and PaymentMode 2 (Card).",
+    "payload": {
+      "InvoiceNumber": "",
+      "POSID": 110014,
+      "USIN": "IPD-TEST-0001",
+      "RefUSIN": null,
+      "DateTime": "2026-10-08 11:00:00",
+      "BuyerName": "Test Patient",
+      "BuyerNTN": "",
+      "BuyerCNIC": "3520212345671",
+      "BuyerPhoneNumber": "03001234567",
+      "TotalSaleValue": 24000,
+      "TotalTaxCharged": 0.0,
+      "TotalQuantity": 3,
+      "Discount": 0,
+      "FurtherTax": 0,
+      "TotalBillAmount": 24000.0,
+      "PaymentMode": 2,
+      "InvoiceType": 1,
+      "Items": [
+        {
+          "ItemCode": "ROOM-PVT",
+          "ItemName": "Private room (per day)",
+          "PCTCode": "98151000",
+          "Quantity": 3,
+          "TaxRate": 0,
+          "SaleValue": 24000,
+          "Discount": 0,
+          "TaxCharged": 0.0,
+          "FurtherTax": 0,
+          "TotalAmount": 24000.0,
+          "InvoiceType": 1,
+          "RefUSIN": null
+        }
+      ]
+    }
+  },
+  {
+    "id": "IMS-H04",
+    "title": "IPD discharge bill: room + consultant visits with 10% concession (mixed payment)",
+    "description": "Four days in a semi-private room (Rs 7,000/day) plus four consultant visits (Rs 3,000 each) with a Rs 1,200 concession. Proves SaleValue is net of discount, Discount is reported separately, and multi-line header totals add up. PaymentMode 5 (Mixed).",
+    "payload": {
+      "InvoiceNumber": "",
+      "POSID": 110014,
+      "USIN": "IPD-TEST-0002",
+      "RefUSIN": null,
+      "DateTime": "2026-10-08 11:00:00",
+      "BuyerName": "Test Patient",
+      "BuyerNTN": "",
+      "BuyerCNIC": "3520212345671",
+      "BuyerPhoneNumber": "03001234567",
+      "TotalSaleValue": 38800,
+      "TotalTaxCharged": 0.0,
+      "TotalQuantity": 8,
+      "Discount": 1200,
+      "FurtherTax": 0,
+      "TotalBillAmount": 38800.0,
+      "PaymentMode": 5,
+      "InvoiceType": 1,
+      "Items": [
+        {
+          "ItemCode": "ROOM-SEMI",
+          "ItemName": "Semi-private room (per day)",
+          "PCTCode": "98151000",
+          "Quantity": 4,
+          "TaxRate": 0,
+          "SaleValue": 28000,
+          "Discount": 0,
+          "TaxCharged": 0.0,
+          "FurtherTax": 0,
+          "TotalAmount": 28000.0,
+          "InvoiceType": 1,
+          "RefUSIN": null
+        },
+        {
+          "ItemCode": "VISIT-CONS",
+          "ItemName": "Consultant visit",
+          "PCTCode": "98151000",
+          "Quantity": 4,
+          "TaxRate": 0,
+          "SaleValue": 10800,
+          "Discount": 1200,
+          "TaxCharged": 0.0,
+          "FurtherTax": 0,
+          "TotalAmount": 10800.0,
+          "InvoiceType": 1,
+          "RefUSIN": null
+        }
+      ]
+    }
+  },
+  {
+    "id": "IMS-H05",
+    "title": "Refund of IMS-H01 (Credit, InvoiceType 3)",
+    "description": "Reverses the OPD bill from IMS-H01. Header and item InvoiceType 3, RefUSIN = the original bill's USIN. The tester fills RefUSIN from the last accepted IMS-H01 run automatically.",
+    "payload": {
+      "InvoiceNumber": "",
+      "POSID": 110014,
+      "USIN": "OPD-TEST-0001-R",
+      "RefUSIN": "OPD-TEST-0001",
+      "DateTime": "2026-10-08 11:00:00",
+      "BuyerName": "Test Patient",
+      "BuyerNTN": "",
+      "BuyerCNIC": "3520212345671",
+      "BuyerPhoneNumber": "03001234567",
+      "TotalSaleValue": 2500,
+      "TotalTaxCharged": 0.0,
+      "TotalQuantity": 1,
+      "Discount": 0,
+      "FurtherTax": 0,
+      "TotalBillAmount": 2500.0,
+      "PaymentMode": 1,
+      "InvoiceType": 3,
+      "Items": [
+        {
+          "ItemCode": "CONS-SPEC",
+          "ItemName": "Specialist consultation (refund)",
+          "PCTCode": "98151000",
+          "Quantity": 1,
+          "TaxRate": 0,
+          "SaleValue": 2500,
+          "Discount": 0,
+          "TaxCharged": 0.0,
+          "FurtherTax": 0,
+          "TotalAmount": 2500.0,
+          "InvoiceType": 3,
+          "RefUSIN": "OPD-TEST-0001"
+        }
+      ]
+    }
+  },
+  {
+    "id": "IMS-H06",
+    "title": "Panel / corporate patient billed by cheque",
+    "description": "A company-paid admission: consultation Rs 3,000 plus 2 days in a Rs 9,000/day room. BuyerName and BuyerNTN carry the panel company. PaymentMode 6 (Cheque).",
+    "payload": {
+      "InvoiceNumber": "",
+      "POSID": 110014,
+      "USIN": "IPD-TEST-0003",
+      "RefUSIN": null,
+      "DateTime": "2026-10-08 11:00:00",
+      "BuyerName": "Demo Textiles (Pvt) Ltd",
+      "BuyerNTN": "1234567-8",
+      "BuyerCNIC": "",
+      "BuyerPhoneNumber": "04211112222",
+      "TotalSaleValue": 21000,
+      "TotalTaxCharged": 0.0,
+      "TotalQuantity": 3,
+      "Discount": 0,
+      "FurtherTax": 0,
+      "TotalBillAmount": 21000.0,
+      "PaymentMode": 6,
+      "InvoiceType": 1,
+      "Items": [
+        {
+          "ItemCode": "CONS-SPEC",
+          "ItemName": "Specialist consultation",
+          "PCTCode": "98151000",
+          "Quantity": 1,
+          "TaxRate": 0,
+          "SaleValue": 3000,
+          "Discount": 0,
+          "TaxCharged": 0.0,
+          "FurtherTax": 0,
+          "TotalAmount": 3000.0,
+          "InvoiceType": 1,
+          "RefUSIN": null
+        },
+        {
+          "ItemCode": "ROOM-PVT",
+          "ItemName": "Private room (per day)",
+          "PCTCode": "98151000",
+          "Quantity": 2,
+          "TaxRate": 0,
+          "SaleValue": 18000,
+          "Discount": 0,
+          "TaxCharged": 0.0,
+          "FurtherTax": 0,
+          "TotalAmount": 18000.0,
+          "InvoiceType": 1,
+          "RefUSIN": null
+        }
+      ]
+    }
+  },
+  {
+    "id": "IMS-R01",
+    "title": "Retail: two items at 18%, one discounted",
+    "description": "For Tier-1 retailers. Two garments at 18%, the second with a Rs 100 discount. Proves TaxCharged = SaleValue \u00d7 rate and that discount comes off before tax.",
+    "payload": {
+      "InvoiceNumber": "",
+      "POSID": 110014,
+      "USIN": "POS-TEST-0001",
+      "RefUSIN": null,
+      "DateTime": "2026-10-08 11:00:00",
+      "BuyerName": "",
+      "BuyerNTN": "",
+      "BuyerCNIC": "",
+      "BuyerPhoneNumber": "",
+      "TotalSaleValue": 1500,
+      "TotalTaxCharged": 270.0,
+      "TotalQuantity": 2,
+      "Discount": 100,
+      "FurtherTax": 0,
+      "TotalBillAmount": 1770.0,
+      "PaymentMode": 1,
+      "InvoiceType": 1,
+      "Items": [
+        {
+          "ItemCode": "SKU-001",
+          "ItemName": "Cotton T-shirt",
+          "PCTCode": "61091000",
+          "Quantity": 1,
+          "TaxRate": 18,
+          "SaleValue": 1000,
+          "Discount": 0,
+          "TaxCharged": 180.0,
+          "FurtherTax": 0,
+          "TotalAmount": 1180.0,
+          "InvoiceType": 1,
+          "RefUSIN": null
+        },
+        {
+          "ItemCode": "SKU-002",
+          "ItemName": "Cotton T-shirt (promo)",
+          "PCTCode": "61091000",
+          "Quantity": 1,
+          "TaxRate": 18,
+          "SaleValue": 500,
+          "Discount": 100,
+          "TaxCharged": 90.0,
+          "FurtherTax": 0,
+          "TotalAmount": 590.0,
+          "InvoiceType": 1,
+          "RefUSIN": null
+        }
+      ]
+    }
+  },
+  {
+    "id": "IMS-R02",
+    "title": "Retail: Third Schedule item (item InvoiceType 11)",
+    "description": "A Third Schedule (retail-price) item uses item InvoiceType 11, and 12 for its return. Tax on these is due on the printed retail price; check your figures against the label before relying on this sample.",
+    "payload": {
+      "InvoiceNumber": "",
+      "POSID": 110014,
+      "USIN": "POS-TEST-0002",
+      "RefUSIN": null,
+      "DateTime": "2026-10-08 11:00:00",
+      "BuyerName": "",
+      "BuyerNTN": "",
+      "BuyerCNIC": "",
+      "BuyerPhoneNumber": "",
+      "TotalSaleValue": 100,
+      "TotalTaxCharged": 18.0,
+      "TotalQuantity": 1,
+      "Discount": 0,
+      "FurtherTax": 0,
+      "TotalBillAmount": 118.0,
+      "PaymentMode": 1,
+      "InvoiceType": 1,
+      "Items": [
+        {
+          "ItemCode": "BEV-500",
+          "ItemName": "Soft drink 500ml",
+          "PCTCode": "22021010",
+          "Quantity": 1,
+          "TaxRate": 18,
+          "SaleValue": 100,
+          "Discount": 0,
+          "TaxCharged": 18.0,
+          "FurtherTax": 0,
+          "TotalAmount": 118.0,
+          "InvoiceType": 11,
+          "RefUSIN": null
+        }
+      ]
+    }
+  }
+]

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>FBR Integration Kit — guides + test harness</title>
+<title>FBR Integration Kit</title>
 <style>
   :root{
     --bg:#f6f7f9; --panel:#fff; --ink:#111827; --muted:#6b7280; --line:#e5e7eb;
@@ -101,7 +101,7 @@
   .scroll{max-height:420px;overflow:auto}
 
   @media print{
-    nav.main,.toc,.note,#connection,#view-di-test,#view-pos-test{display:none!important}
+    nav.main,.toc,.note,#connection,#view-di-test,#view-pos-test,#view-ims-test{display:none!important}
     body{background:#fff}
     .doclayout{grid-template-columns:1fr}
     article.doc{border:0;padding:0}
@@ -113,17 +113,19 @@
 
 <header class="top">
   <h1>FBR Integration Kit</h1>
-  <p>Digital Invoicing (DI) &amp; POS Digital Invoicing &mdash; the guides and a live test harness in one offline file.</p>
+  <p>Digital Invoicing (DI), POS Digital Invoicing &amp; IMS (Tier-1 / Income Tax POS) &mdash; the guides and a live test harness in one offline file.</p>
 </header>
 
 <nav class="main">
   <button data-view="overview">Overview</button>
   <button data-view="di-guide">DI Guide</button>
   <button data-view="pos-guide">POS Guide</button>
+  <button data-view="ims-guide">IMS Guide</button>
   <button data-view="scenarios">Scenarios</button>
   <span class="sep"></span>
   <button data-view="di-test">DI Tester</button>
   <button data-view="pos-test">POS Tester</button>
+  <button data-view="ims-test">IMS Tester</button>
   <span class="stamp">built __BUILT_ON__</span>
 </nav>
 
@@ -163,6 +165,14 @@
     </div>
   </section>
 
+  <!-- ======================= IMS GUIDE ====================== -->
+  <section id="view-ims-guide" class="view">
+    <div class="doclayout">
+      <aside class="toc"></aside>
+      <article class="doc">__DOC_IMS__</article>
+    </div>
+  </section>
+
   <!-- ======================= SCENARIOS ====================== -->
   <section id="view-scenarios" class="view">
     <div class="doclayout">
@@ -171,7 +181,7 @@
     </div>
   </section>
 
-  <!-- ============ shared by both testers ============ -->
+  <!-- ============ shared by all testers ============ -->
   <div id="connection" class="hide">
     <div class="note">
       <strong>Read first.</strong>
@@ -180,7 +190,7 @@
       and leave the Proxy URL below set to <code>http://localhost:8787/proxy</code>.
       (2) Your token is kept in this browser&rsquo;s localStorage for convenience. Use a <strong>sandbox</strong> token here;
       production tokens belong in your server&rsquo;s secret store.
-      (3) <strong>DI Post</strong> and <strong>every POS call</strong> write real records. Only DI <em>Validate</em> is a dry run.
+      (3) <strong>DI Post</strong>, <strong>every POS call</strong> and <strong>every IMS call</strong> write real records. Only DI <em>Validate</em> is a dry run.
     </div>
     <div class="panel">
       <h2>Connection</h2>
@@ -344,6 +354,84 @@
     </div>
   </section>
 
+  <!-- ====================== IMS TESTER ====================== -->
+  <section id="view-ims-test" class="view">
+    <div class="note">
+      <strong>IMS has no validate endpoint.</strong> Every call below creates a fiscal invoice. Use the
+      <strong>test POS ID</strong> from <em>Generate Test POS</em> and stay on Cloud Sandbox (or a component installed
+      in Test mode) until you are ready to file real bills. Field names are PascalCase &mdash; see the IMS Guide.
+    </div>
+
+    <div class="panel">
+      <h2>IMS &mdash; endpoint, POS ID &amp; token</h2>
+      <div class="grid">
+        <div>
+          <label>Mode / environment</label>
+          <select id="imsEnv">
+            <option value="sb">Cloud Sandbox (esp.fbr.gov.pk:8244)</option>
+            <option value="prod">Cloud Production (gw.fbr.gov.pk)</option>
+            <option value="local">Local Fiscal Component (localhost:8524)</option>
+          </select>
+        </div>
+        <div>
+          <label>POSID <span class="muted">(IRIS &rarr; Generate Test POS &rarr; &ldquo;Pos Registration Number&rdquo;)</span></label>
+          <input id="imsPosId" placeholder="110014" inputmode="numeric" />
+        </div>
+        <div style="grid-column:1/-1">
+          <label>Endpoint URL <span class="muted">(auto-filled; edit if FBR moves the host)</span></label>
+          <input id="imsUrl" />
+        </div>
+        <div style="grid-column:1/-1" id="imsTokenWrap">
+          <label>Bearer token <span class="muted">(cloud only &mdash; sandbox uses FBR&rsquo;s shared token 1298b5eb-b252-3d97-8622-a4a69d5bf818 with <em>your</em> test POSID; production uses your own token)</span></label>
+          <input id="imsToken" type="password" placeholder="paste the token issued against your registered POS" />
+        </div>
+      </div>
+      <div class="row">
+        <label style="display:flex;gap:6px;align-items:center;margin:0;font-weight:600;color:var(--ink)">
+          <input type="checkbox" id="imsFreshUsin" checked style="width:auto" /> New USIN and current DateTime on every load
+        </label>
+        <button class="ghost" id="imsWhich">Check token (which environment?)</button>
+        <button class="ghost hide" id="imsHealth">Check local service</button>
+      </div>
+    </div>
+
+    <div class="split">
+      <div class="panel">
+        <h2>Scenario &amp; payload</h2>
+        <div><label>Scenario</label><select id="imsScenario"></select></div>
+        <p class="muted" id="imsScenarioDesc" style="margin:8px 0 0"></p>
+        <div class="row">
+          <button class="ghost" id="imsLoad">Load payload</button>
+          <button class="ghost" id="imsFormat">Format JSON</button>
+          <button class="ghost" id="imsTotals">Recompute totals</button>
+          <button class="ghost" id="imsCurl">Copy as curl</button>
+        </div>
+        <div style="margin-top:10px">
+          <label>Request body (editable)</label>
+          <textarea id="imsBody" spellcheck="false"></textarea>
+        </div>
+        <div class="row">
+          <button class="act" id="imsRun">Send to FBR IMS</button>
+          <button class="ghost" id="imsRunAll">Run ALL scenarios</button>
+          <button class="ghost" id="imsExport">Export results (CSV)</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Response</h2>
+        <pre class="out" id="imsOut">Nothing sent yet.</pre>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Results</h2>
+      <div class="scroll"><table>
+        <thead><tr><th style="width:90px">Scenario</th><th style="width:70px">Verdict</th><th style="width:190px">USIN</th><th style="width:200px">Fiscal invoice #</th><th>Detail</th></tr></thead>
+        <tbody id="imsResults"><tr><td colspan="5" class="muted">No runs yet.</td></tr></tbody>
+      </table></div>
+    </div>
+  </section>
+
 </div>
 
 <script>
@@ -465,6 +553,15 @@ const POS_SAMPLES = [
   }
 ];
 
+/* IMS (Tier-1 / Income Tax POS) — scenarios live in fbr-ims-test-scenarios.json. */
+const IMS_SCENARIOS = __IMS_SCENARIOS__;
+const IMS_URLS = {
+  sb:    'https://esp.fbr.gov.pk:8244/FBR/v1/api/Live/PostData',
+  prod:  'https://gw.fbr.gov.pk/imsp/v1/api/Live/PostData',
+  local: 'http://localhost:8524/api/IMSFiscal/GetInvoiceNumberByModel'
+};
+const IMS_HEALTH_URL = 'http://localhost:8524/api/IMSFiscal/Get';
+
 /* ------------------------------------------------------------------ *
  * Helpers
  * ------------------------------------------------------------------ */
@@ -473,7 +570,8 @@ const LS = 'fbr-harness-v1';
 const esc = s => String(s == null ? '' : s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 
 const STATE_KEYS = ['proxy','timeout','diEnv','diOp','diUrl','diToken','sNtn','sName','sProv','sAddr',
-                    'posEnv','posUrl','posToken','posBpos','posSellerNtn','posSellerName'];
+                    'posEnv','posUrl','posToken','posBpos','posSellerNtn','posSellerName',
+                    'imsEnv','imsUrl','imsToken','imsPosId'];
 
 function saveState(){
   const s = {};
@@ -490,14 +588,25 @@ function loadState(){
 const diEndpoint = () => DI_BASE + $('diOp').value + ($('diEnv').value === 'sb' ? '_sb' : '');
 function syncDiUrl(){ $('diUrl').value = diEndpoint(); saveState(); }
 function syncPosUrl(){ $('posUrl').value = POS_URLS[$('posEnv').value]; saveState(); }
+function syncImsUrl(){
+  const local = $('imsEnv').value === 'local';
+  $('imsUrl').value = IMS_URLS[$('imsEnv').value];
+  $('imsTokenWrap').classList.toggle('hide', local);
+  $('imsHealth').classList.toggle('hide', !local);
+  $('imsWhich').classList.toggle('hide', local);
+  saveState();
+}
 
 function parseBody(id, out){
   try { return JSON.parse($(id).value); }
   catch(e){ $(out).textContent = 'The request body is not valid JSON.\n\n' + e.message; return null; }
 }
 
-/* Sends through the relay when one is configured, otherwise directly (and explains CORS on failure). */
-async function send(url, token, payload){
+/* Sends through the relay when one is configured, otherwise directly (and explains CORS on failure).
+ * method is 'POST' (default) or 'GET' — GET is only used for the IMS local health check. */
+async function send(url, token, payload, method){
+  method = method || 'POST';
+  const body = method === 'GET' ? undefined : JSON.stringify(payload);
   const proxy = $('proxy').value.trim();
   const ms = Math.max(5, Number($('timeout').value) || 45) * 1000;
   const ctrl = new AbortController();
@@ -507,19 +616,17 @@ async function send(url, token, payload){
     let httpStatus, text;
     if (proxy) {
       const r = await fetch(proxy, {
-        method:'POST', signal: ctrl.signal,
-        headers:{ 'Content-Type':'application/json', 'x-fbr-target':url, 'x-fbr-token':token },
-        body: JSON.stringify(payload)
+        method, signal: ctrl.signal,
+        headers:{ 'Content-Type':'application/json', 'x-fbr-target':url, 'x-fbr-token':token || '' },
+        body
       });
       const relay = await r.json();
       if (relay.relayError) return { ok:false, ms:Date.now()-started, error:'The relay could not reach FBR: ' + relay.relayError };
       httpStatus = relay.httpStatus; text = relay.body;
     } else {
-      const r = await fetch(url, {
-        method:'POST', signal: ctrl.signal,
-        headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer ' + token },
-        body: JSON.stringify(payload)
-      });
+      const headers = { 'Content-Type':'application/json' };
+      if (token) headers.Authorization = 'Bearer ' + token;
+      const r = await fetch(url, { method, signal: ctrl.signal, headers, body });
       httpStatus = r.status; text = await r.text();
     }
     let json = null;
@@ -538,9 +645,9 @@ async function send(url, token, payload){
   } finally { clearTimeout(timer); }
 }
 
-function curlFor(url, token, payload){
+function curlFor(url, token, payload, noAuth){
   return "curl -X POST '" + url + "' \\\n" +
-         "  -H 'Authorization: Bearer " + (token || 'YOUR_TOKEN') + "' \\\n" +
+         (noAuth ? '' : "  -H 'Authorization: Bearer " + (token || 'YOUR_TOKEN') + "' \\\n") +
          "  -H 'Content-Type: application/json' \\\n" +
          "  -d '" + JSON.stringify(payload).replace(/'/g, "'\\''") + "'";
 }
@@ -560,10 +667,26 @@ function download(name, text, type){
 /* ------------------------------------------------------------------ *
  * Verdicts — the acceptance checks the guides insist on
  * ------------------------------------------------------------------ */
+/* FBR's gateway (WSO2) answers auth problems before the API sees the payload. Its fault codes say which
+ * problem it is — 900908 in particular means the token is real but issued for a different FBR API. */
+const GATEWAY_FAULTS = {
+  900901: 'Invalid token — FBR does not recognise it. Check for a typo or an expired token.',
+  900902: 'No token sent. Paste the Bearer token.',
+  900908: 'Token is valid but NOT allowed for this API or environment. Either it belongs to another FBR channel (a DI or POS DI token used here), or it is a PRODUCTION token used on the SANDBOX URL (or the reverse). In the IMS Tester, "Check token" tells you which.',
+  900910: 'Token is valid but lacks the scope for this resource. Regenerate it for this API.'
+};
+function gatewayFault(res){
+  if (res.httpStatus !== 401 && res.httpStatus !== 403) return null;
+  let code = null;
+  try { code = JSON.parse(res.text).fault.code; } catch(e){}
+  const why = GATEWAY_FAULTS[code] ||
+    (res.httpStatus === 401 ? 'the token is invalid, missing, or wrong for this environment.' : 'access forbidden for this token.');
+  return 'HTTP ' + res.httpStatus + (code ? ' (gateway ' + code + ')' : '') + ' — ' + why;
+}
 /** DI: header statusCode "00" AND status Valid AND every item "00" (DI guide §8.2). */
 function diVerdict(res){
   if (!res.ok) return { pass:false, detail:res.error, invoice:'' };
-  if (res.httpStatus === 401) return { pass:false, detail:'HTTP 401 — the token is invalid, missing, or wrong for this environment.', invoice:'' };
+  const gw = gatewayFault(res); if (gw) return { pass:false, detail:gw, invoice:'' };
   if (res.httpStatus >= 400) return { pass:false, detail:'HTTP ' + res.httpStatus + ' — ' + (res.text || '').slice(0,300), invoice:'' };
   if (!res.json) return { pass:false, detail:'FBR replied with non-JSON (gateway or maintenance page): ' + (res.text||'').slice(0,300), invoice:'' };
 
@@ -588,7 +711,7 @@ function diVerdict(res){
 /** POS: HTTP 2xx AND body statusCode 200 AND a non-empty result (POS guide §8.2). */
 function posVerdict(res){
   if (!res.ok) return { pass:false, detail:res.error, tracking:'' };
-  if (res.httpStatus === 401) return { pass:false, detail:'HTTP 401 — the token is invalid, missing, or wrong for this environment.', tracking:'' };
+  const gw = gatewayFault(res); if (gw) return { pass:false, detail:gw, tracking:'' };
   if (res.httpStatus >= 400) return { pass:false, detail:'HTTP ' + res.httpStatus + ' — ' + (res.text || '').slice(0,300), tracking:'' };
   if (!res.json) return { pass:false, detail:'FBR replied with non-JSON (gateway or maintenance page): ' + (res.text||'').slice(0,300), tracking:'' };
   if (Number(res.json.statusCode) !== 200)
@@ -596,6 +719,35 @@ function posVerdict(res){
   if (!res.json.result)
     return { pass:false, detail:'Accepted but no tracking number returned — do not treat this as filed.', tracking:'' };
   return { pass:true, detail:'Accepted.', tracking: res.json.result };
+}
+
+/** Reads a field regardless of case — IMS replies are not consistent about it. */
+function pick(obj, name){
+  if (!obj || typeof obj !== 'object') return undefined;
+  const k = Object.keys(obj).find(x => x.toLowerCase() === name.toLowerCase());
+  return k === undefined ? undefined : obj[k];
+}
+
+/** IMS: HTTP 2xx AND body Code "100" AND a non-empty InvoiceNumber / FBRInvoiceNumber (IMS guide §9.2). */
+function imsVerdict(res){
+  if (!res.ok) return { pass:false, detail:res.error, invoice:'' };
+  const gw = gatewayFault(res); if (gw) return { pass:false, detail:gw, invoice:'' };
+  if (res.httpStatus >= 400) return { pass:false, detail:'HTTP ' + res.httpStatus + ' — ' + (res.text || '').slice(0,300), invoice:'' };
+  let j = res.json;
+  // The spec shows the reply as a JSON string that itself holds JSON; unwrap one level if so.
+  if (typeof j === 'string') { try { j = JSON.parse(j); } catch(e){} }
+  if (!j || typeof j !== 'object') return { pass:false, detail:'FBR replied with non-JSON (gateway or maintenance page): ' + (res.text||'').slice(0,300), invoice:'' };
+
+  const code = String(pick(j, 'Code') == null ? '' : pick(j, 'Code'));
+  const inv  = pick(j, 'InvoiceNumber') || pick(j, 'FBRInvoiceNumber') || '';
+  const msg  = pick(j, 'Response') || '';
+  const errs = pick(j, 'Errors');
+  const errText = errs ? (typeof errs === 'string' ? errs : JSON.stringify(errs)) : '';
+  if (code !== '100')
+    return { pass:false, detail:'Code ' + (code || '(none)') + ' — ' + (msg || 'rejected with no message') + (errText ? ' | ' + errText : ''), invoice:'' };
+  if (!String(inv).trim())
+    return { pass:false, detail:'Code 100 but no invoice number returned — do not treat this bill as fiscalized.', invoice:'' };
+  return { pass:true, detail: msg || 'Fiscalized.', invoice:String(inv) };
 }
 
 /* ------------------------------------------------------------------ *
@@ -786,6 +938,229 @@ $('posRun').addEventListener('click', async e => {
 });
 
 /* ------------------------------------------------------------------ *
+ * IMS tester
+ * ------------------------------------------------------------------ */
+const imsRows = [];
+const r2 = n => Math.round((Number(n) || 0) * 100) / 100;
+const pad = n => String(n).padStart(2, '0');
+function nowStamp(){
+  const d = new Date();
+  return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) + ' ' +
+         pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+}
+/* A USIN must never repeat for a POS, so the tester suffixes the scenario's base USIN with a timestamp. */
+function freshUsin(base){
+  const d = new Date();
+  const sfx = String(d.getFullYear()).slice(2) + pad(d.getMonth()+1) + pad(d.getDate()) +
+              pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds()) + String(d.getMilliseconds()).padStart(3,'0');
+  return (String(base).replace(/-\d{15}$/, '') + '-' + sfx).slice(0, 50);
+}
+
+function fillImsScenarios(){
+  $('imsScenario').innerHTML = IMS_SCENARIOS
+    .map(s => '<option value="' + s.id + '">' + s.id + ' — ' + esc(s.title) + '</option>').join('');
+  describeImsScenario();
+}
+function describeImsScenario(){
+  const s = IMS_SCENARIOS.find(x => x.id === $('imsScenario').value);
+  $('imsScenarioDesc').textContent = s ? s.description : '';
+}
+function imsPayload(id){
+  const s = IMS_SCENARIOS.find(x => x.id === id);
+  const p = JSON.parse(JSON.stringify(s.payload));
+  const pos = $('imsPosId').value.trim();
+  if (pos) p.POSID = Number(pos);
+  if ($('imsFreshUsin').checked) { p.USIN = freshUsin(p.USIN); p.DateTime = nowStamp(); }
+  // A Credit/Debit refers to an earlier bill: use the USIN of the last accepted original if we have one.
+  if (p.RefUSIN) {
+    const origId = id.replace(/^IMS-H05$/, 'IMS-H01');
+    const orig = imsRows.find(r => r.id === origId && r.pass);
+    if (orig) {
+      p.RefUSIN = orig.usin;
+      (p.Items || []).forEach(it => { if (it.RefUSIN) it.RefUSIN = orig.usin; });
+    }
+  }
+  return p;
+}
+function loadImsScenario(){
+  if (!$('imsScenario').value) return;
+  $('imsBody').value = JSON.stringify(imsPayload($('imsScenario').value), null, 2);
+}
+
+/* Header totals are sums of the item lines (IMS guide §8). Returns item lines that don't add up. */
+function imsItemProblems(p){
+  const out = [];
+  (p.Items || []).forEach((it, n) => {
+    const tax = r2(Number(it.SaleValue) * Number(it.TaxRate) / 100);
+    const tot = r2(Number(it.SaleValue) + Number(it.TaxCharged) + (Number(it.FurtherTax) || 0));
+    if (Math.abs(tax - r2(it.TaxCharged)) > 0.01) out.push('Item ' + (n+1) + ': TaxCharged ' + it.TaxCharged + ' but SaleValue × TaxRate = ' + tax);
+    if (Math.abs(tot - r2(it.TotalAmount)) > 0.01) out.push('Item ' + (n+1) + ': TotalAmount ' + it.TotalAmount + ' but SaleValue + TaxCharged + FurtherTax = ' + tot);
+  });
+  return out;
+}
+function imsTotals(p){
+  const it = p.Items || [];
+  const sum = f => r2(it.reduce((a, x) => a + (Number(x[f]) || 0), 0));
+  return { TotalSaleValue:sum('SaleValue'), TotalTaxCharged:sum('TaxCharged'), TotalQuantity:sum('Quantity'),
+           Discount:sum('Discount'), FurtherTax:sum('FurtherTax'), TotalBillAmount:sum('TotalAmount') };
+}
+function recomputeImsTotals(){
+  const p = parseBody('imsBody','imsOut'); if (!p) return;
+  Object.assign(p, imsTotals(p));
+  $('imsBody').value = JSON.stringify(p, null, 2);
+  const probs = imsItemProblems(p);
+  $('imsOut').textContent = 'Header totals recomputed from the ' + (p.Items || []).length + ' item line(s).' +
+    (probs.length ? '\n\nItem lines that do not add up (fix these by hand):\n- ' + probs.join('\n- ') : '');
+}
+
+/* The mistakes the spec itself invites (IMS guide §7). Returned as warnings; the user may send anyway. */
+function imsLint(p){
+  const w = [];
+  if (p.InvoiceNumber) w.push('InvoiceNumber should be "" — FBR fills it in.');
+  if (typeof p.POSID !== 'number' || !p.POSID) w.push('POSID must be a non-zero number.');
+  else if (p.POSID === 110014)
+    w.push('POSID 110014 is the spec\'s shared sample. Enter your own test POS ID (IRIS → Generate Test POS) in the POSID box and reload the payload.');
+  if (!p.USIN) w.push('USIN is required.');
+  if (!/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(String(p.DateTime || ''))) w.push('DateTime should be "yyyy-MM-dd HH:mm:ss".');
+  if (p.BuyerCNIC && !/^\d{13}$/.test(p.BuyerCNIC)) w.push('BuyerCNIC should be 13 digits without dashes.');
+  if ([1,2,3,4,5,6].indexOf(p.PaymentMode) === -1) w.push('PaymentMode must be 1–6 (the spec\'s 21–26 numbering is a typo).');
+  if ([1,2,3].indexOf(p.InvoiceType) === -1) w.push('InvoiceType must be 1, 2 or 3 (the spec\'s 27–29 numbering is a typo).');
+  if ((p.InvoiceType === 2 || p.InvoiceType === 3) && !p.RefUSIN) w.push('A Debit/Credit bill needs RefUSIN = the original bill\'s USIN.');
+  if (!Array.isArray(p.Items) || !p.Items.length) w.push('Items must contain at least one line.');
+  (p.Items || []).forEach((it, n) => {
+    if (!/^\d{1,8}$/.test(String(it.PCTCode || ''))) w.push('Item ' + (n+1) + ': PCTCode must be up to 8 digits, no dot (9815.1000 → 98151000).');
+    if (typeof it.TaxRate !== 'number') w.push('Item ' + (n+1) + ': TaxRate must be a number (18), not a string ("18%").');
+    if ([1,3,11,12,139].indexOf(it.InvoiceType) === -1) w.push('Item ' + (n+1) + ': InvoiceType must be 1, 3, 11, 12 or 139.');
+  });
+  const t = imsTotals(p);
+  Object.keys(t).forEach(k => { if (Math.abs(r2(p[k]) - t[k]) > 0.01) w.push(k + ' is ' + p[k] + ' but the items sum to ' + t[k] + ' — use Recompute totals.'); });
+  return w.concat(imsItemProblems(p));
+}
+
+function renderImsRows(){
+  const tb = $('imsResults');
+  if (!imsRows.length) { tb.innerHTML = '<tr><td colspan="5" class="muted">No runs yet.</td></tr>'; return; }
+  tb.innerHTML = imsRows.map(r =>
+    '<tr><td><code>' + esc(r.id) + '</code></td>' +
+    '<td><span class="pill ' + (r.pass ? 'ok">PASS' : 'bad">FAIL') + '</span></td>' +
+    '<td><code>' + esc(r.usin) + '</code></td>' +
+    '<td><code>' + esc(r.invoice) + '</code></td>' +
+    '<td>' + esc(r.detail) + '</td></tr>').join('');
+}
+
+async function runIms(id, payload){
+  const env = $('imsEnv').value;
+  const url = $('imsUrl').value.trim();
+  const token = env === 'local' ? '' : $('imsToken').value.trim();
+  if (env !== 'local' && !token) { $('imsOut').textContent = 'Paste your IMS token first (not needed for the local component).'; return null; }
+
+  // Resending an accepted USIN would file a duplicate — refuse and give it a fresh one.
+  if (imsRows.some(r => r.pass && r.usin === payload.USIN)) {
+    if (!$('imsFreshUsin').checked) { $('imsOut').textContent = 'USIN ' + payload.USIN + ' was already fiscalized in this session. Change it, or tick "New USIN".'; return null; }
+    payload.USIN = freshUsin(payload.USIN);
+    $('imsBody').value = JSON.stringify(payload, null, 2);
+  }
+
+  $('imsOut').textContent = 'Sending ' + id + ' to ' + url + ' …';
+  const res = await send(url, token, payload);
+  const v = imsVerdict(res);
+  $('imsOut').textContent =
+    id + '  ' + (v.pass ? 'PASS' : 'FAIL') + '   (' + res.ms + 'ms' +
+    (res.httpStatus ? ', HTTP ' + res.httpStatus : '') + ')\n' + v.detail +
+    (v.pass ? '\nFiscal invoice number: ' + v.invoice + '  — print it with a QR code (0.7–1.0 inch) and the FBR logo.' : '') +
+    '\n\n--- request ---\n' + JSON.stringify(payload, null, 2) +
+    '\n\n--- response ---\n' + (res.ok ? (res.json ? JSON.stringify(res.json, null, 2) : res.text) : res.error);
+
+  const i = imsRows.findIndex(r => r.id === id);
+  const row = { id:id, pass:v.pass, usin:payload.USIN, invoice:v.invoice, detail:v.detail };
+  if (i >= 0) imsRows[i] = row; else imsRows.push(row);
+  renderImsRows();
+  return v;
+}
+
+$('imsScenario').addEventListener('change', () => { describeImsScenario(); loadImsScenario(); });
+$('imsEnv').addEventListener('change', syncImsUrl);
+$('imsLoad').addEventListener('click', loadImsScenario);
+$('imsFormat').addEventListener('click', () => {
+  const o = parseBody('imsBody','imsOut'); if (o) $('imsBody').value = JSON.stringify(o, null, 2);
+});
+$('imsTotals').addEventListener('click', recomputeImsTotals);
+$('imsCurl').addEventListener('click', e => {
+  const o = parseBody('imsBody','imsOut');
+  if (o) copy(curlFor($('imsUrl').value.trim(), $('imsToken').value.trim(), o, $('imsEnv').value === 'local'), e.target);
+});
+$('imsHealth').addEventListener('click', async e => {
+  e.target.disabled = true;
+  $('imsOut').textContent = 'GET ' + IMS_HEALTH_URL + ' …';
+  const res = await send(IMS_HEALTH_URL, '', null, 'GET');
+  const up = res.ok && res.httpStatus >= 200 && res.httpStatus < 300 && /responding/i.test(res.text || '');
+  $('imsOut').textContent = (up ? 'UP — the local Fiscal Component is responding.' :
+    'NOT RESPONDING. Check services.msc for the FBR fiscalization service, and that this page and fbr-proxy.js run on the same PC as the component.') +
+    '\n\n' + (res.ok ? 'HTTP ' + res.httpStatus + '\n' + (res.text || '') : res.error);
+  e.target.disabled = false;
+});
+/* Posts an empty body {} to both cloud hosts. The gateway's answer says whether the token opens each one;
+ * IMS rejects {} as invalid data (Code 102), so nothing is ever filed. */
+$('imsWhich').addEventListener('click', async e => {
+  const token = $('imsToken').value.trim();
+  if (!token) { $('imsOut').textContent = 'Paste the token first.'; return; }
+  e.target.disabled = true;
+  $('imsOut').textContent = 'Checking the token against the IMS sandbox and production hosts (empty body — nothing is filed) …';
+  const lines = [], opens = {};
+  for (const env of ['sb', 'prod']) {
+    const res = await send(IMS_URLS[env], token, {});
+    const gw = gatewayFault(res);
+    opens[env] = res.ok && !gw && res.httpStatus < 500;
+    lines.push((env === 'sb' ? 'Sandbox    ' : 'Production ') + (opens[env] ? 'OPENS  ' : 'blocked') + '  ' +
+      (res.ok ? (gw || ('HTTP ' + res.httpStatus + ' ' + (res.text || '').slice(0, 160))) : res.error));
+  }
+  const verdict =
+    opens.sb && opens.prod ? 'This token opens both hosts.' :
+    opens.sb   ? 'SANDBOX token — use it with Cloud Sandbox and your test POS ID.' :
+    opens.prod ? 'PRODUCTION token. Every valid bill sent with it is a real fiscal invoice. For testing, get the token that comes with your TEST POS ID (Generate Test POS in IRIS), or ask the FBR helpline for the IMS sandbox token.' :
+                 'Opens neither IMS host — it is a DI / POS DI token, or invalid. Get the token issued for your IMS POS registration.';
+  $('imsOut').textContent = verdict + '\n\n' + lines.join('\n');
+  e.target.disabled = false;
+});
+$('imsRun').addEventListener('click', async e => {
+  const p = parseBody('imsBody','imsOut'); if (!p) return;
+  const warn = imsLint(p);
+  if (warn.length && !confirm('This payload has problems FBR is likely to reject:\n\n- ' + warn.join('\n- ') + '\n\nSend it anyway?')) {
+    $('imsOut').textContent = 'Not sent. Fix these first:\n- ' + warn.join('\n- ');
+    return;
+  }
+  if ($('imsEnv').value === 'prod' &&
+      !confirm('This is the PRODUCTION endpoint. IMS has no dry run — this files a real fiscal invoice with FBR. Continue?')) return;
+  e.target.disabled = true;
+  await runIms($('imsScenario').value, p);
+  e.target.disabled = false;
+});
+$('imsRunAll').addEventListener('click', async e => {
+  if ($('imsEnv').value === 'prod') { alert('Run ALL is disabled on production. Send production bills one at a time.'); return; }
+  if (!confirm('This sends all ' + IMS_SCENARIOS.length + ' scenarios — each creates a fiscal invoice in this environment. Continue?')) return;
+  e.target.disabled = true; $('imsRun').disabled = true;
+  imsRows.length = 0; renderImsRows();
+  // Scenarios run in file order, so IMS-H01 is accepted before IMS-H05 refunds it.
+  for (const s of IMS_SCENARIOS) {
+    $('imsScenario').value = s.id; describeImsScenario();
+    const p = imsPayload(s.id);
+    $('imsBody').value = JSON.stringify(p, null, 2);
+    const v = await runIms(s.id, p);
+    if (v === null) break;
+  }
+  const passed = imsRows.filter(r => r.pass).length;
+  $('imsOut').textContent = 'Finished. ' + passed + ' / ' + imsRows.length + ' passed. See the results table below.';
+  e.target.disabled = false; $('imsRun').disabled = false;
+});
+$('imsExport').addEventListener('click', () => {
+  const q = v => '"' + String(v == null ? '' : v).replace(/"/g,'""') + '"';
+  const csv = ['Scenario,Verdict,USIN,FiscalInvoiceNumber,Detail']
+    .concat(imsRows.map(r => [r.id, r.pass?'PASS':'FAIL', q(r.usin), q(r.invoice), q(r.detail)].join(',')))
+    .join('\n');
+  download('fbr-ims-results-' + TODAY + '.csv', csv, 'text/csv');
+});
+
+/* ------------------------------------------------------------------ *
  * Docs: per-view table of contents built from the h2s
  * ------------------------------------------------------------------ */
 const slug = t => t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
@@ -823,15 +1198,16 @@ function watchHeadings(){
 /* ------------------------------------------------------------------ *
  * View routing
  * ------------------------------------------------------------------ */
-const VIEWS = ['overview','di-guide','pos-guide','scenarios','di-test','pos-test'];
+const VIEWS = ['overview','di-guide','pos-guide','ims-guide','scenarios','di-test','pos-test','ims-test'];
+const TESTERS = ['di-test','pos-test','ims-test'];
 
 function show(view, keepScroll){
   if (VIEWS.indexOf(view) === -1) view = 'overview';
   VIEWS.forEach(v => $('view-' + v).classList.toggle('on', v === view));
   document.querySelectorAll('nav.main button').forEach(b =>
     b.classList.toggle('on', b.dataset.view === view));
-  // The connection panel is shared by both testers.
-  $('connection').classList.toggle('hide', view !== 'di-test' && view !== 'pos-test');
+  // The connection panel is shared by all testers.
+  $('connection').classList.toggle('hide', TESTERS.indexOf(view) === -1);
   if (!keepScroll) window.scrollTo(0, 0);
   try { history.replaceState(null, '', '#' + view); } catch(e){}
 }
@@ -857,11 +1233,14 @@ document.querySelectorAll('input,select').forEach(el => el.addEventListener('cha
 
 fillScenarios();
 fillPosSamples();
+fillImsScenarios();
 loadState();
 if (!$('diUrl').value) syncDiUrl();
 if (!$('posUrl').value) syncPosUrl();
+{ const u = $('imsUrl').value; syncImsUrl(); if (u) $('imsUrl').value = u; }
 loadScenario();
 loadPosSample();
+loadImsScenario();
 buildTocs();
 watchHeadings();
 

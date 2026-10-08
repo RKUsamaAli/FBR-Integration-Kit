@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>FBR Integration Kit — guides + test harness</title>
+<title>FBR Integration Kit</title>
 <style>
   :root{
     --bg:#f6f7f9; --panel:#fff; --ink:#111827; --muted:#6b7280; --line:#e5e7eb;
@@ -101,7 +101,7 @@
   .scroll{max-height:420px;overflow:auto}
 
   @media print{
-    nav.main,.toc,.note,#connection,#view-di-test,#view-pos-test{display:none!important}
+    nav.main,.toc,.note,#connection,#view-di-test,#view-pos-test,#view-ims-test{display:none!important}
     body{background:#fff}
     .doclayout{grid-template-columns:1fr}
     article.doc{border:0;padding:0}
@@ -113,18 +113,20 @@
 
 <header class="top">
   <h1>FBR Integration Kit</h1>
-  <p>Digital Invoicing (DI) &amp; POS Digital Invoicing &mdash; the guides and a live test harness in one offline file.</p>
+  <p>Digital Invoicing (DI), POS Digital Invoicing &amp; IMS (Tier-1 / Income Tax POS) &mdash; the guides and a live test harness in one offline file.</p>
 </header>
 
 <nav class="main">
   <button data-view="overview">Overview</button>
   <button data-view="di-guide">DI Guide</button>
   <button data-view="pos-guide">POS Guide</button>
+  <button data-view="ims-guide">IMS Guide</button>
   <button data-view="scenarios">Scenarios</button>
   <span class="sep"></span>
   <button data-view="di-test">DI Tester</button>
   <button data-view="pos-test">POS Tester</button>
-  <span class="stamp">built 2026-09-01</span>
+  <button data-view="ims-test">IMS Tester</button>
+  <span class="stamp">built 2026-10-08</span>
 </nav>
 
 <div class="wrap">
@@ -139,13 +141,14 @@
 <p><strong>If you only take one file, take <a class="xref" data-view="di-test" href="#di-test"><code>fbr-test-harness.html</code></a>.</strong> It carries both guides, the scenario reference, the relay source and a working tester in a single offline page — open it in a browser, no install, no network.</p>
 <h2>Files</h2>
 <p><em>"Test harness" is the engineering term for a rig that feeds prepared inputs into a system and reports what came back — a testing tool, not part of your product.</em></p>
-<div class="tablewrap"><table><thead><tr><th>File</th><th>What it is</th></tr></thead><tbody><tr><td><code>index.html</code></td><td>The cover page for this folder: what to open first, the job in five steps, and every file with a one-line description.</td></tr><tr><td><a class="xref" data-view="di-test" href="#di-test"><code>fbr-test-harness.html</code></a></td><td><strong>The whole kit as one offline page.</strong> Both guides to read, and a live tester: paste a token, load a scenario, post or validate, get a PASS/FAIL table and a CSV. Covers DI and POS.</td></tr><tr><td><a class="xref" data-view="di-guide" href="#di-guide"><code>fbr-digital-invoice-developer-guide.md</code></a></td><td><strong>Digital Invoicing (DI)</strong> — the full guide. Registration, sandbox token, payload, calculations, response handling, error codes, go-live.</td></tr><tr><td><a class="xref" data-view="pos-guide" href="#pos-guide"><code>fbr-pos-digital-invoice-developer-guide.md</code></a></td><td><strong>POS Digital Invoicing</strong> — the full guide. Terminal registration, BPOS ID, payload, code lists, response handling, go-live.</td></tr><tr><td><a class="xref" data-view="scenarios" href="#scenarios"><code>fbr-di-sandbox-scenarios.md</code></a></td><td>The 28 DI test scenarios (SN001–SN028) explained, grouped by what each one exercises, plus the failure table.</td></tr><tr><td><code>fbr-di-sandbox-scenarios.json</code></td><td>The same 28 scenarios as ready-to-post request bodies.</td></tr><tr><td><code>fbr-proxy.js</code></td><td>~60-line Node relay. Required, because a browser cannot call FBR directly (no CORS headers). Also embedded in the HTML page, with a download button.</td></tr><tr><td><code>harness.template.html</code>, <code>build-harness.js</code></td><td>How the single page is produced. Edit the markdown, then run <code>node build-harness.js</code> to regenerate <a class="xref" data-view="di-test" href="#di-test"><code>fbr-test-harness.html</code></a>. Nothing to install.</td></tr></tbody></table></div>
+<div class="tablewrap"><table><thead><tr><th>File</th><th>What it is</th></tr></thead><tbody><tr><td><code>index.html</code></td><td>The cover page for this folder: what to open first, the job in five steps, and every file with a one-line description.</td></tr><tr><td><a class="xref" data-view="di-test" href="#di-test"><code>fbr-test-harness.html</code></a></td><td><strong>The whole kit as one offline page.</strong> All three guides to read, and a live tester for each: paste a token, load a scenario, post or validate, get a PASS/FAIL table and a CSV. Covers DI, POS and IMS.</td></tr><tr><td><a class="xref" data-view="di-guide" href="#di-guide"><code>fbr-digital-invoice-developer-guide.md</code></a></td><td><strong>Digital Invoicing (DI)</strong> — the full guide. Registration, sandbox token, payload, calculations, response handling, error codes, go-live.</td></tr><tr><td><a class="xref" data-view="pos-guide" href="#pos-guide"><code>fbr-pos-digital-invoice-developer-guide.md</code></a></td><td><strong>POS Digital Invoicing</strong> — the full guide. Terminal registration, BPOS ID, payload, code lists, response handling, go-live.</td></tr><tr><td><a class="xref" data-view="ims-guide" href="#ims-guide"><code>fbr-ims-fiscal-component-developer-guide.md</code></a></td><td><strong>IMS (Tier-1 / Income Tax POS)</strong> — the full guide, from FBR's Software Fiscal Component spec. POS Client Registration, test POS ID, cloud API or local Windows component, payload, response handling, hospital billing, printing, go-live.</td></tr><tr><td><code>fbr-ims-test-scenarios.json</code></td><td>8 ready-to-post IMS bills: 6 hospital cases (OPD, IPD room, discharge bill, refund, panel patient) and 2 retail ones.</td></tr><tr><td><code>FBR Techincal assistant.pdf</code></td><td>FBR's original IMS / Tier-1 retailer technical specification, which the IMS guide is based on.</td></tr><tr><td><a class="xref" data-view="scenarios" href="#scenarios"><code>fbr-di-sandbox-scenarios.md</code></a></td><td>The 28 DI test scenarios (SN001–SN028) explained, grouped by what each one exercises, plus the failure table.</td></tr><tr><td><code>fbr-di-sandbox-scenarios.json</code></td><td>The same 28 scenarios as ready-to-post request bodies.</td></tr><tr><td><code>fbr-proxy.js</code></td><td>~60-line Node relay. Required, because a browser cannot call FBR directly (no CORS headers). Also embedded in the HTML page, with a download button.</td></tr><tr><td><code>harness.template.html</code>, <code>build-harness.js</code></td><td>How the single page is produced. Edit the markdown, then run <code>node build-harness.js</code> to regenerate <a class="xref" data-view="di-test" href="#di-test"><code>fbr-test-harness.html</code></a>. Nothing to install.</td></tr></tbody></table></div>
 <h2>Which one does this business need?</h2>
-<div class="tablewrap"><table><thead><tr><th></th><th><strong>Digital Invoicing (DI)</strong></th><th><strong>POS Digital Invoicing</strong></th></tr></thead><tbody><tr><td>Purpose</td><td>Legal sales-tax invoice register</td><td>Retail till/receipt reporting (SRO 1006)</td></tr><tr><td>Typical user</td><td>Manufacturer, importer, distributor, wholesaler, corporate seller</td><td>Tier-1 retailer, restaurant, outlet counter</td></tr><tr><td>Registers</td><td>The <strong>invoice</strong></td><td>The <strong>terminal</strong> (a BPOS ID per till)</td></tr><tr><td>Endpoint</td><td><code>gw.fbr.gov.pk/di_data/v1/di/...</code></td><td><code>gw.fbr.gov.pk/pdi/v1/api/DigitalInvoicing/...</code></td></tr><tr><td>Field style</td><td>Descriptive strings — <code>"18%"</code>, <code>"Numbers, pieces, units"</code></td><td>Numeric codes — <code>18</code>, <code>uoM: 5</code></td></tr><tr><td>Success signal</td><td><code>validationResponse.statusCode == "00"</code> (string) → <code>invoiceNumber</code></td><td>body <code>statusCode == 200</code> (number) → <code>result</code> tracking number</td></tr><tr><td>Per-item validation</td><td>Yes</td><td>No — one verdict per invoice</td></tr><tr><td>Dry-run endpoint</td><td><strong>Yes</strong> — <code>validateinvoicedata</code></td><td><strong>None. Every call writes.</strong></td></tr><tr><td>Onboarding gate</td><td>Pass the FBR-assigned SN scenarios in sandbox</td><td>Register + activate the terminal</td></tr></tbody></table></div>
+<div class="tablewrap"><table><thead><tr><th></th><th><strong>Digital Invoicing (DI)</strong></th><th><strong>POS Digital Invoicing</strong></th><th><strong>IMS (Tier-1 / Income Tax POS)</strong></th></tr></thead><tbody><tr><td>Purpose</td><td>Legal sales-tax invoice register</td><td>Retail till/receipt reporting (SRO 1006)</td><td>Bill fiscalization: Tier-1 retail, and income-tax POS integration</td></tr><tr><td>Typical user</td><td>Manufacturer, importer, distributor, wholesaler, corporate seller</td><td>Tier-1 retailer, restaurant, outlet counter</td><td>Tier-1 retailer; <strong>hospitals, clinics, labs</strong>, restaurants, hotels</td></tr><tr><td>Registers</td><td>The <strong>invoice</strong></td><td>The <strong>terminal</strong> (a BPOS ID per till)</td><td>The <strong>POS</strong> (a POSID per counter, via e.fbr → POS Client Registration)</td></tr><tr><td>Endpoint</td><td><code>gw.fbr.gov.pk/di_data/v1/di/...</code></td><td><code>gw.fbr.gov.pk/pdi/v1/api/DigitalInvoicing/...</code></td><td><code>gw.fbr.gov.pk/imsp/v1/api/Live/PostData</code>, or a local Windows component on <code>localhost:8524</code></td></tr><tr><td>Field style</td><td>Descriptive strings — <code>"18%"</code>, <code>"Numbers, pieces, units"</code></td><td>Numeric codes — <code>18</code>, <code>uoM: 5</code></td><td>PascalCase, numbers — <code>TaxRate: 18</code>, <code>PCTCode: "98151000"</code></td></tr><tr><td>Success signal</td><td><code>validationResponse.statusCode == "00"</code> (string) → <code>invoiceNumber</code></td><td>body <code>statusCode == 200</code> (number) → <code>result</code> tracking number</td><td><code>Code == "100"</code> → <code>InvoiceNumber</code></td></tr><tr><td>Per-item validation</td><td>Yes</td><td>No — one verdict per invoice</td><td>No — one verdict per bill</td></tr><tr><td>Dry-run endpoint</td><td><strong>Yes</strong> — <code>validateinvoicedata</code></td><td><strong>None. Every call writes.</strong></td><td><strong>None. Every call writes.</strong></td></tr><tr><td>Onboarding gate</td><td>Pass the FBR-assigned SN scenarios in sandbox</td><td>Register + activate the terminal</td><td>Register the POS, generate a test POS ID, post in sandbox</td></tr></tbody></table></div>
+<p><strong>A hospital or clinic needs IMS.</strong> Read <a class="xref" data-view="ims-guide" href="#ims-guide"><code>fbr-ims-fiscal-component-developer-guide.md</code></a>, §11 in particular.</p>
 <p>Some businesses must run <strong>both</strong> (a manufacturer with a retail outlet). Then keep two independent settings blocks, two tokens, and pick exactly one channel per sale — never post the same sale to both.</p>
 <h2>Order of work</h2>
-<ol><li><strong>Read the guide</strong> for the channel you need — DI or POS. Open <a class="xref" data-view="di-test" href="#di-test"><code>fbr-test-harness.html</code></a> and use the <strong>DI Guide</strong> / <strong>POS Guide</strong> tabs, or read the markdown files directly.</li><li><strong>Get the sandbox token</strong> (guide §4). This is IRIS/portal work, not code, and it takes days. Start it before writing anything.</li><li><strong>Import FBR's lookup lists</strong> (HS code, UoM, sale type, rate, SRO, province) and put them on your product and customer masters as dropdowns. Skipping this is the single largest source of production rejections.</li><li><strong>Prove the payload with the harness</strong> before wiring it into the app:<pre class="code" data-lang="bash"><code>node fbr-proxy.js            # leave running (source + download button on the Overview tab)
-open fbr-test-harness.html   # or just double-click it</code></pre>Go to the <strong>DI Tester</strong> tab, paste the sandbox token, set the seller identity, and run <strong>Validate All</strong> first — it writes nothing.</li><li><strong>Wire it into the application</strong>, then repeat the scenarios <em>from the app</em>. The harness proves FBR accepts a payload; only the app proves your mapping produces that payload from a real sale.</li><li><strong>Complete the assigned scenarios</strong>, generate the production token, switch the environment, post one real low-value document, and verify it in IRIS.</li></ol>
+<ol><li><strong>Read the guide</strong> for the channel you need — DI, POS or IMS. Open <a class="xref" data-view="di-test" href="#di-test"><code>fbr-test-harness.html</code></a> and use the <strong>DI Guide</strong> / <strong>POS Guide</strong> / <strong>IMS Guide</strong> tabs, or read the markdown files directly.</li><li><strong>Get the sandbox token</strong> (guide §4). This is IRIS/portal work, not code, and it takes days. Start it before writing anything.</li><li><strong>Import FBR's lookup lists</strong> (HS code, UoM, sale type, rate, SRO, province) and put them on your product and customer masters as dropdowns. Skipping this is the single largest source of production rejections.</li><li><strong>Prove the payload with the harness</strong> before wiring it into the app:<pre class="code" data-lang="bash"><code>node fbr-proxy.js            # leave running (source + download button on the Overview tab)
+open fbr-test-harness.html   # or just double-click it</code></pre>Go to the <strong>DI Tester</strong> tab, paste the sandbox token, set the seller identity, and run <strong>Validate All</strong> first — it writes nothing. For IMS, use the <strong>IMS Tester</strong> tab with your test POS ID; there is no dry run, so stay on Cloud Sandbox.</li><li><strong>Wire it into the application</strong>, then repeat the scenarios <em>from the app</em>. The harness proves FBR accepts a payload; only the app proves your mapping produces that payload from a real sale.</li><li><strong>Complete the assigned scenarios</strong>, generate the production token, switch the environment, post one real low-value document, and verify it in IRIS.</li></ol>
 <h2>Five things that will bite, whichever channel you build</h2>
 <ol><li><strong>HTTP 200 does not mean accepted.</strong> Both APIs return 200 with a rejection in the body. DI also returns a <code>"00"</code> header with a failing item underneath. Check the body, and check every item.</li><li><strong>Call FBR outside your database transaction.</strong> Commit the sale first, then submit. A timeout must not roll back a real sale.</li><li><strong>Never auto-retry a timed-out submission.</strong> FBR may have accepted it. A blind retry files a duplicate legal document that can only be undone with a debit/credit note.</li><li><strong>Lock a document once FBR accepts it</strong> — no edit, no delete, no date change.</li><li><strong>Tokens are server-side secrets.</strong> Five-year credentials for a taxpayer's identity. Never in a browser, a mobile binary, or git.</li></ol>
 <h2>Verifying you are done</h2>
@@ -500,6 +503,178 @@ totalValues = taxableValue + salesTaxApplicable + extraTax + furtherTax − stWi
     </div>
   </section>
 
+  <!-- ======================= IMS GUIDE ====================== -->
+  <section id="view-ims-guide" class="view">
+    <div class="doclayout">
+      <aside class="toc"></aside>
+      <article class="doc"><h1>FBR IMS (Tier-1 / Income Tax POS) — Developer Integration Guide</h1>
+<p><strong>Audience:</strong> a developer integrating a point-of-sale or billing system with FBR's <strong>IMS Software Fiscal Component</strong>: Tier-1 retailers under the Sales Tax Rules, and businesses notified for <strong>income-tax POS integration</strong> (hospitals, clinics, labs, restaurants, hotels, …). <strong>Scope:</strong> POS registration → test POS ID → sandbox posting → production → receipt printing. <strong>Companion files:</strong> <a class="xref" data-view="di-test" href="#di-test"><code>fbr-test-harness.html</code></a> (IMS Tester tab), <code>fbr-ims-test-scenarios.json</code> (ready-made payloads), <code>fbr-proxy.js</code> (CORS relay). <strong>Source spec:</strong> FBR <em>Technical Specification for Data Sharing through Software Fiscal Component from TIER 1 Retailer with FBR</em> (the "FBR Technical Assistant" PDF in this folder).</p>
+<hr />
+<h2>1. What IMS is</h2>
+<p>IMS is FBR's <strong>invoice fiscalization</strong> system. Every bill your POS prints is sent to FBR. FBR returns a <strong>Fiscal Invoice Number</strong> (19–30 digits, e.g. <code>9000052011142444901</code>). You print that number and a QR code on the customer's receipt.</p>
+<p>There are two ways to connect, and the payload is identical in both:</p>
+<div class="tablewrap"><table><thead><tr><th></th><th><strong>Cloud (direct API)</strong></th><th><strong>Local Fiscal Component</strong></th></tr></thead><tbody><tr><td>How</td><td>Your server POSTs to FBR's API over HTTPS</td><td>A Windows service FBR provides runs on the POS PC; your POS POSTs to it on <code>localhost</code>, and it uploads to FBR in the background</td></tr><tr><td>Auth</td><td><code>Authorization: Bearer &lt;token&gt;</code></td><td>None on localhost. The <strong>Access Code</strong> is entered once in the installer</td></tr><tr><td>Fits</td><td>Web/cloud billing systems, multi-branch HMS/ERP</td><td>Desktop POS on Windows PCs at each counter</td></tr><tr><td>POS type in registration</td><td><strong>Cloud Based</strong></td><td><strong>Client Server</strong></td></tr><tr><td>Internet at sale time</td><td>Required</td><td>Not required (the component queues and syncs)</td></tr></tbody></table></div>
+<p>Pick one per POS ID. A web-based hospital system almost always wants <strong>Cloud</strong>.</p>
+<hr />
+<h2>2. IMS is not the other two FBR APIs</h2>
+<p>FBR runs three separate e-invoicing channels. They differ in endpoints, payloads, tokens and success codes. A payload built for one is rejected by the others.</p>
+<div class="tablewrap"><table><thead><tr><th></th><th><strong>IMS (this guide)</strong></th><th><strong>POS Digital Invoicing</strong></th><th><strong>Digital Invoicing (DI)</strong></th></tr></thead><tbody><tr><td>Who</td><td>Tier-1 retailers; income-tax-notified businesses (hospitals, clinics, restaurants…)</td><td>Retail tills under PRAL's POS DI</td><td>Manufacturers, distributors, wholesalers</td></tr><tr><td>Sandbox</td><td><code>esp.fbr.gov.pk:8244/FBR/v1/api/Live/PostData</code></td><td><code>esp.fbr.gov.pk:8244/DigitalInvoicing/v1/PostInvoiceData_v1</code></td><td><code>gw.fbr.gov.pk/di_data/v1/di/postinvoicedata_sb</code></td></tr><tr><td>Production</td><td><code>gw.fbr.gov.pk/imsp/v1/api/Live/PostData</code></td><td><code>gw.fbr.gov.pk/pdi/v1/api/DigitalInvoicing/PostInvoiceData_v1</code></td><td><code>gw.fbr.gov.pk/di_data/v1/di/postinvoicedata</code></td></tr><tr><td>Field style</td><td><strong>PascalCase</strong>: <code>POSID</code>, <code>USIN</code>, <code>TotalBillAmount</code></td><td>camelCase: <code>bposId</code>, <code>totalValues</code></td><td>camelCase: <code>sellerNTNCNIC</code></td></tr><tr><td>Terminal ID</td><td><code>POSID</code> (number)</td><td><code>bposId</code> (string)</td><td>none</td></tr><tr><td>Item code</td><td><code>PCTCode</code>, 8 digits, no dot</td><td><code>hsCode</code> <code>"0101.2100"</code></td><td><code>hsCode</code> <code>"0101.2100"</code></td></tr><tr><td>Success</td><td><code>Code == "100"</code> + <code>InvoiceNumber</code></td><td><code>statusCode == 200</code> + <code>result</code></td><td><code>statusCode == "00"</code> + <code>invoiceNumber</code></td></tr><tr><td>Dry run</td><td><strong>None</strong></td><td>None</td><td><code>validateinvoicedata</code></td></tr></tbody></table></div>
+<p>If the registration screen you used was <strong>e.fbr → Registration → POS Client Registration</strong>, you are on IMS. That is the screen with the "Register for: Income Tax / Sales Tax (SRO 779(I)/2020)" option.</p>
+<hr />
+<h2>3. Prerequisites (business side)</h2>
+<ol><li>An active <strong>NTN</strong> for the business, and an <strong>IRIS login</strong> (<code>https://iris.fbr.gov.pk</code>; the older <code>https://e.fbr.gov.pk</code> address redirects there).</li><li>Every <strong>branch</strong> you will register exists on the IRIS profile as a business premises.</li><li>For each billing counter: a name, and the PC's <strong>MAC address</strong> and <strong>IP address</strong> (the registration form asks for both, even for cloud systems; give the billing server's values in that case).</li><li>Decide <strong>Cloud vs Local</strong> (§1) before registering. It is the "POS type" field.</li><li>Which law obliges you to integrate. Retailers usually register for <strong>Sales Tax</strong> (Tier-1, Chapter XIV-AA of the Sales Tax Rules 2006). Businesses notified for income-tax integration (SRO 779(I)/2020, extended by SRO 428(I)/2024, e.g. hospitals, clinics and labs) register for <strong>Income Tax</strong>. Confirm the right one with your tax advisor; it changes how FBR treats the data.</li></ol>
+<hr />
+<h2>4. Registering the POS and getting the test POS ID</h2>
+<p>Log in to IRIS / e.fbr and open <strong>Registration → POS Client Registration</strong>. The form has four parts.</p>
+<h3>4.1 Business Information</h3>
+<div class="tablewrap"><table><thead><tr><th>Field</th><th>Required</th><th>What to enter</th></tr></thead><tbody><tr><td>NTN, Business Name</td><td>auto</td><td>From your profile</td></tr><tr><td>STRN</td><td>no</td><td>Sales-tax registration number, if any</td></tr><tr><td>Brand Name</td><td>no</td><td>Trading name, e.g. the hospital's name</td></tr><tr><td>Products</td><td>no</td><td>e.g. "Medical consultation, room charges"</td></tr><tr><td><strong>Register for</strong></td><td><strong>yes</strong></td><td><strong>Income Tax</strong> or <strong>Sales Tax</strong> (§3.5)</td></tr><tr><td>Manufacturer</td><td>yes</td><td>No, for service providers and retailers</td></tr><tr><td>Estimated annual turnover / transactions per day</td><td>no</td><td>Rough figures</td></tr><tr><td>Website URL</td><td>no</td><td></td></tr><tr><td>POS software name / technologies / vendor</td><td>no</td><td>Your billing system, its stack, who supplies it</td></tr><tr><td><strong>POS type</strong></td><td><strong>yes</strong></td><td><strong>Cloud Based</strong> or <strong>Client Server</strong> (§1)</td></tr><tr><td>In-house software development</td><td>yes</td><td>Yes if your own team builds it</td></tr><tr><td>Number of technical staff</td><td>no</td><td></td></tr></tbody></table></div>
+<h3>4.2 Contact Information</h3>
+<p>Add at least one <strong>General</strong> contact and one <strong>Technical</strong> contact (name, mobile, email, address). The branch screen only lets you pick from the General contacts, so create those first.</p>
+<h3>4.3 Branch Information (one per branch)</h3>
+<p>Branch name, city, <strong>weekly off days</strong> (when no bills are expected), <strong>sector</strong>, address, contact person, <strong>latitude/longitude</strong>, version, franchise yes/no, store timings from/to.</p>
+<p>Get the off days and timings right. FBR monitors registered POS IDs, and a POS that goes quiet during declared opening hours draws attention.</p>
+<h3>4.4 POS Details (one per billing counter)</h3>
+<div class="tablewrap"><table><thead><tr><th>Field</th><th>What to enter</th></tr></thead><tbody><tr><td>POS Branch</td><td>The branch from §4.3</td></tr><tr><td>POS Identification Number</td><td>Your own unique name for the counter, e.g. <code>OPD-RECEPTION-1</code></td></tr><tr><td>POS Type</td><td>Usually <strong>Primary</strong> for a counter used daily</td></tr><tr><td>MAC address, IP address</td><td>Of that counter's PC (or of the billing server for cloud)</td></tr></tbody></table></div>
+<h3>4.5 Generate Test POS</h3>
+<p>Open the <strong>Generate Test POS</strong> tab and click <strong>Generate Test POS IDs</strong>. IRIS lists test IDs like this:</p>
+<div class="tablewrap"><table><thead><tr><th>Seq. No</th><th>Pos Registration Number</th><th>BusinessName</th><th>Code</th><th></th></tr></thead><tbody><tr><td>1</td><td><code>822922</code></td><td>YOUR BUSINESS NAME</td><td><code>A6F41649</code></td><td>Reset POSID</td></tr></tbody></table></div>
+<ul><li><strong>Pos Registration Number</strong> is the <strong>test POSID</strong>. It goes in the <code>POSID</code> field of every sandbox payload.</li><li><strong>Code</strong> is the <strong>Access Code</strong> for the local Fiscal Component installer (§5). It is <strong>not</strong> a Bearer token.</li><li><strong>Reset POSID</strong> reissues a test ID. You only need it if one stops working.</li></ul>
+<p>Keep a table of <em>physical counter → test POS ID → production POS ID</em>.</p>
+<h3>4.6 Tokens and access codes</h3>
+<div class="tablewrap"><table><thead><tr><th>Environment</th><th>Cloud (Bearer token)</th><th>Local component</th></tr></thead><tbody><tr><td><strong>Sandbox</strong></td><td>The <strong>shared sandbox token</strong> from the spec, <code>1298b5eb-b252-3d97-8622-a4a69d5bf818</code>, used with <strong>your own test POSID</strong>. Checked October 2026: it opens <code>esp.fbr.gov.pk:8244/FBR/v1</code></td><td>Test POSID + the <strong>Code</strong> from §4.5, with <strong>Test</strong> chosen in the installer</td></tr><tr><td><strong>Production</strong></td><td>The token FBR issues for your <strong>production</strong> POS registration. It is accepted only on <code>gw.fbr.gov.pk/imsp/...</code> and gets <code>900908</code> on the sandbox</td><td>Production POS registration number + its access code, with <strong>Production</strong> chosen</td></tr></tbody></table></div>
+<ul><li>Use <strong>Check token</strong> in the IMS Tester to see which environment a token opens. It sends an empty body, so nothing is filed.</li><li>Never put the shared sandbox POSID <code>110014</code> in your own tests. Use your own test POSID, so the bills show up against your registration.</li><li>The <strong>production</strong> token is a long-lived credential for the taxpayer's identity. Store it <strong>server-side, encrypted</strong>. Never in a browser, a desktop binary, git, or a chat message. If it has been exposed, ask FBR to reissue it.</li></ul>
+<hr />
+<h2>5. Installing the Local Fiscal Component (Client Server only)</h2>
+<p>Skip this section for Cloud.</p>
+<p><strong>Prerequisites on each POS PC:</strong> Windows 7 or later, <strong>IIS</strong> enabled, <strong>.NET Framework 4.5+</strong>, an administrator account, and internet during installation.</p>
+<ol><li>Download <code>https://download.fbr.gov.pk/IMS_Setup/FBRIMS.zip</code> and unzip it.</li><li>Run <code>Setup.exe</code> <strong>as administrator</strong> and choose <strong>Complete</strong>.</li><li>Enter the <strong>POS Registration Number</strong>, the <strong>Access Code</strong>, and <strong>Test</strong> (for sandbox) or <strong>Production</strong>.</li><li><strong>Browse</strong> to the folder where the component keeps its local files. FBR recommends a drive other than <code>C:</code>.</li><li><strong>Install</strong>, then <strong>Finish</strong>.</li><li>Check the service is listed and running in <code>services.msc</code>.</li><li>Open <code>http://localhost:8524/api/IMSFiscal/get</code> in a browser. It should return <code>["Service is responding"]</code>.</li></ol>
+<p><strong>Moving from test to live:</strong> don't uninstall from Control Panel. Run <code>Setup.exe</code> again, answer <strong>Yes</strong> to the upgrade prompt, choose <strong>Remove</strong>, finish, then install again with <strong>Production</strong> selected.</p>
+<hr />
+<h2>6. Endpoints and authentication</h2>
+<div class="tablewrap"><table><thead><tr><th>Mode</th><th>Environment</th><th>Method + URL</th><th>Auth</th></tr></thead><tbody><tr><td>Cloud</td><td>Sandbox</td><td><code>POST https://esp.fbr.gov.pk:8244/FBR/v1/api/Live/PostData</code></td><td>Bearer token</td></tr><tr><td>Cloud</td><td>Production</td><td><code>POST https://gw.fbr.gov.pk/imsp/v1/api/Live/PostData</code></td><td>Bearer token</td></tr><tr><td>Local</td><td>(set at install)</td><td><code>POST http://localhost:8524/api/IMSFiscal/GetInvoiceNumberByModel</code></td><td>none</td></tr><tr><td>Local</td><td>health check</td><td><code>GET http://localhost:8524/api/IMSFiscal/Get</code></td><td>none</td></tr></tbody></table></div>
+<pre class="code"><code>POST &lt;url&gt;
+Authorization: Bearer &lt;token&gt;        (cloud only)
+Content-Type: application/json</code></pre>
+<p>Keep the URLs in configuration, not code. The sandbox and production hosts are different.</p>
+<p><strong>Do not copy the spec's <code>ServerCertificateValidationCallback = delegate { return true; }</code> line.</strong> It turns off HTTPS certificate checking. Both FBR hosts present valid DigiCert certificates (checked October 2026), so it is not needed. With it in place, anyone on the network path could read the token.</p>
+<hr />
+<h2>7. The payload</h2>
+<p>One bill header plus an <code>Items</code> array. Field names are <strong>PascalCase</strong> and must match exactly.</p>
+<h3>7.1 Header</h3>
+<div class="tablewrap"><table><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr></thead><tbody><tr><td><code>InvoiceNumber</code></td><td>string</td><td>yes, blank</td><td>Always send <code>""</code>. FBR fills it in</td></tr><tr><td><code>POSID</code></td><td>number</td><td>yes</td><td>The FBR POS ID (test or production) for this counter</td></tr><tr><td><code>USIN</code></td><td>string ≤50</td><td>yes</td><td><strong>Your own bill number.</strong> Unique per POS. Never reuse it, even after a failed send that FBR may have recorded</td></tr><tr><td><code>RefUSIN</code></td><td>string ≤50</td><td>for Debit/Credit</td><td>The <code>USIN</code> of the original bill. <code>null</code> for a new bill</td></tr><tr><td><code>DateTime</code></td><td>string</td><td>yes</td><td><code>"yyyy-MM-dd HH:mm:ss"</code>, local time of the sale</td></tr><tr><td><code>BuyerName</code></td><td>string ≤150</td><td>no</td><td></td></tr><tr><td><code>BuyerNTN</code></td><td>string ≤9</td><td>no</td><td><code>"1234567-8"</code> format</td></tr><tr><td><code>BuyerCNIC</code></td><td>string ≤13</td><td>no</td><td><strong>13 digits, no dashes.</strong> The spec's sample shows dashes, which overruns the field length</td></tr><tr><td><code>BuyerPhoneNumber</code></td><td>string ≤20</td><td>no</td><td></td></tr><tr><td><code>TotalSaleValue</code></td><td>number</td><td>yes</td><td>Sum of item <code>SaleValue</code></td></tr><tr><td><code>TotalTaxCharged</code></td><td>number</td><td>yes</td><td>Sum of item <code>TaxCharged</code></td></tr><tr><td><code>TotalQuantity</code></td><td>number</td><td>yes</td><td>Sum of item <code>Quantity</code></td></tr><tr><td><code>Discount</code></td><td>number</td><td>no</td><td>Sum of item <code>Discount</code></td></tr><tr><td><code>FurtherTax</code></td><td>number</td><td>no</td><td>Sum of item <code>FurtherTax</code></td></tr><tr><td><code>TotalBillAmount</code></td><td>number</td><td>yes</td><td>Sum of item <code>TotalAmount</code></td></tr><tr><td><code>PaymentMode</code></td><td>number</td><td>yes</td><td><code>1</code> Cash, <code>2</code> Card, <code>3</code> Gift Voucher, <code>4</code> Loyalty Card, <code>5</code> Mixed, <code>6</code> Cheque</td></tr><tr><td><code>InvoiceType</code></td><td>number</td><td>yes</td><td><code>1</code> New, <code>2</code> Debit, <code>3</code> Credit</td></tr><tr><td><code>Items</code></td><td>array</td><td>yes</td><td>At least one item</td></tr></tbody></table></div>
+<blockquote><strong>The spec's numbering is broken.</strong> It prints the PaymentMode list as 21–26 and the InvoiceType list as 27–29. That is a document-formatting error. The real codes are 1–6 and 1–3, as above.</blockquote>
+<h3>7.2 Item (<code>Items[]</code>)</h3>
+<div class="tablewrap"><table><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr></thead><tbody><tr><td><code>ItemCode</code></td><td>string ≤50</td><td>yes</td><td>Your own service/product code</td></tr><tr><td><code>ItemName</code></td><td>string ≤150</td><td>yes</td><td></td></tr><tr><td><code>PCTCode</code></td><td>string ≤8</td><td>yes</td><td>Pakistan Customs Tariff / service heading, <strong>digits only</strong>: <code>9815.1000</code> → <code>"98151000"</code></td></tr><tr><td><code>Quantity</code></td><td>number</td><td>yes</td><td>Days, visits, units…</td></tr><tr><td><code>TaxRate</code></td><td>number</td><td>yes</td><td>Percent as a number: <code>18</code>, <code>0</code>. Not <code>"18%"</code></td></tr><tr><td><code>SaleValue</code></td><td>number</td><td>yes</td><td>Value the tax is calculated on, <strong>after discount, before tax</strong></td></tr><tr><td><code>Discount</code></td><td>number</td><td>no</td><td>Discount given on the line (already removed from <code>SaleValue</code>)</td></tr><tr><td><code>TaxCharged</code></td><td>number</td><td>yes</td><td><code>SaleValue × TaxRate / 100</code></td></tr><tr><td><code>FurtherTax</code></td><td>number</td><td>no</td><td></td></tr><tr><td><code>TotalAmount</code></td><td>number</td><td>yes</td><td><code>SaleValue + TaxCharged + FurtherTax</code></td></tr><tr><td><code>InvoiceType</code></td><td>number</td><td>yes</td><td><code>1</code> New, <code>3</code> Credit, <code>11</code> Third Schedule New, <code>12</code> Third Schedule Credit, <code>139</code> Sale of goods under SRO 297(I)/2023</td></tr><tr><td><code>RefUSIN</code></td><td>string</td><td>for credit</td><td>The original bill's <code>USIN</code></td></tr></tbody></table></div>
+<h3>7.3 Worked example: a hospital OPD bill</h3>
+<pre class="code" data-lang="json"><code>{
+  "InvoiceNumber": "",
+  "POSID": 110014,
+  "USIN": "OPD-2026-000123",
+  "RefUSIN": null,
+  "DateTime": "2026-10-08 11:42:00",
+  "BuyerName": "Test Patient",
+  "BuyerNTN": "",
+  "BuyerCNIC": "3520212345671",
+  "BuyerPhoneNumber": "03001234567",
+  "TotalSaleValue": 2500.00,
+  "TotalTaxCharged": 0.00,
+  "TotalQuantity": 1,
+  "Discount": 0.00,
+  "FurtherTax": 0.00,
+  "TotalBillAmount": 2500.00,
+  "PaymentMode": 1,
+  "InvoiceType": 1,
+  "Items": [
+    {
+      "ItemCode": "CONS-SPEC",
+      "ItemName": "Specialist consultation",
+      "PCTCode": "98151000",
+      "Quantity": 1,
+      "TaxRate": 0,
+      "SaleValue": 2500.00,
+      "Discount": 0.00,
+      "TaxCharged": 0.00,
+      "FurtherTax": 0.00,
+      "TotalAmount": 2500.00,
+      "InvoiceType": 1,
+      "RefUSIN": null
+    }
+  ]
+}</code></pre>
+<p>The spec's sample JSON uses curly quotes (<code>“ ”</code>), which are not valid JSON. Copy from here or from <code>fbr-ims-test-scenarios.json</code>, not from the PDF.</p>
+<hr />
+<h2>8. Calculation rules</h2>
+<p>Per item, rounded to 2 decimals:</p>
+<pre class="code"><code>SaleValue   = (unitPrice × Quantity) − Discount
+TaxCharged  = SaleValue × TaxRate / 100
+TotalAmount = SaleValue + TaxCharged + FurtherTax</code></pre>
+<p>Header, summed from the item array you are about to send:</p>
+<pre class="code"><code>TotalSaleValue  = Σ SaleValue        TotalTaxCharged = Σ TaxCharged
+TotalQuantity   = Σ Quantity         Discount        = Σ Discount
+FurtherTax      = Σ FurtherTax       TotalBillAmount = Σ TotalAmount</code></pre>
+<p>The spec's own figures follow this (1,298 sale value + 221 tax = 1,519 bill, with a 380 discount reported separately). Its .NET item sample does not add up (SaleValue 3180, TotalAmount 3000), so don't use that sample as a calculation reference.</p>
+<p>Compute the header <strong>from the mapped item array</strong>, never from screen totals, which may round differently. The tester's <strong>Recompute totals</strong> button does exactly this.</p>
+<hr />
+<h2>9. Handling the response</h2>
+<h3>9.1 Success</h3>
+<pre class="code" data-lang="json"><code>{
+  "InvoiceNumber": "9000052011142444901",
+  "Code": "100",
+  "Response": "Fiscal Invoice Number generated successfully.",
+  "Errors": null
+}</code></pre>
+<p>Some responses name the field <code>FBRInvoiceNumber</code> instead of <code>InvoiceNumber</code>. Read either.</p>
+<h3>9.2 The checks you must implement</h3>
+<p>Treat the bill as fiscalized only when <strong>all three</strong> hold:</p>
+<ol><li>HTTP status is 2xx, <strong>and</strong></li><li>the body's <code>Code</code> is <code>"100"</code> (compare as a string; some replies send a number), <strong>and</strong></li><li><code>InvoiceNumber</code> (or <code>FBRInvoiceNumber</code>) is non-empty.</li></ol>
+<p>Anything else is a failure. Store <code>Code</code>, <code>Response</code> and <code>Errors</code> verbatim on the bill. Also handle <code>5xx</code> (FBR side), timeouts, and HTML gateway pages that come back instead of JSON. Show the first 500 characters of the raw body so the cause is visible.</p>
+<h3>9.3 Gateway errors (401 / 403)</h3>
+<p>FBR's API gateway checks the token before IMS sees the bill. It replies with a <code>fault</code> object, not IMS's <code>Code</code>, so read <code>fault.code</code>:</p>
+<div class="tablewrap"><table><thead><tr><th>HTTP</th><th><code>fault.code</code></th><th>Meaning</th><th>Fix</th></tr></thead><tbody><tr><td>401</td><td><code>900902</code></td><td>No token sent</td><td>Send <code>Authorization: Bearer &lt;token&gt;</code></td></tr><tr><td>401</td><td><code>900901</code></td><td>Token not recognised</td><td>Typo, expired, or revoked: copy it again or regenerate</td></tr><tr><td>403</td><td><code>900908</code></td><td><strong>Token is valid, but not for this API</strong></td><td>The token was issued for another FBR channel (DI or POS DI). Get the token for your <strong>IMS</strong> POS registration</td></tr><tr><td>403</td><td><code>900910</code></td><td>Token lacks the scope for this resource</td><td>Regenerate it for this API</td></tr></tbody></table></div>
+<p><code>900908</code> is the usual first-day error. Each token only opens the API <strong>and environment</strong> it was issued for, and all channels share one gateway. Two common cases:</p>
+<ul><li>a DI or POS DI token used against the IMS URL;</li><li>a <strong>production</strong> IMS token used against the IMS <strong>sandbox</strong> URL. The production token is accepted only on <code>gw.fbr.gov.pk/imsp/...</code>; testing needs the token that goes with the <strong>test POS ID</strong>.</li></ul>
+<p>To find out which API a token belongs to without filing anything, use <strong>Check token</strong> in the IMS Tester, or POST an empty body <code>{}</code> yourself. A <code>900908</code> means "not this API"; an IMS reply such as <code>Code "102"</code> means the token opens it.</p>
+<p>The spec does not publish a list of rejection codes. Log every non-100 code you see in the sandbox and build your own table as you go. Codes observed so far:</p>
+<div class="tablewrap"><table><thead><tr><th><code>Code</code></th><th><code>Response</code></th><th>Meaning</th></tr></thead><tbody><tr><td><code>100</code></td><td>Fiscal Invoice Number generated successfully / Invoice received successfully</td><td>Accepted</td></tr><tr><td><code>102</code></td><td>Invalid data received</td><td>Payload rejected. <code>InvoiceNumber</code> comes back as <code>"Not Available"</code>, so never treat a non-empty <code>InvoiceNumber</code> alone as success</td></tr></tbody></table></div>
+<hr />
+<h2>10. Posting flow inside your application</h2>
+<pre class="code"><code>Cashier saves the bill
+   └─ app commits it locally (status: NotFiscalized)
+         └─ build IMS payload (right POSID for this counter, fresh USIN)
+               └─ POST PostData  (or localhost:8524/…/GetInvoiceNumberByModel)
+                     ├─ Code 100 + InvoiceNumber → store it, LOCK the bill, print receipt
+                     └─ anything else           → store Code/Response/Errors, bill stays editable</code></pre>
+<p>Non-negotiables:</p>
+<ul><li><strong>There is no validate endpoint.</strong> Every call creates a record. Rehearse in the sandbox only.</li><li><strong>Call FBR outside your database transaction.</strong> Commit the bill first, then call FBR. A timeout must never roll back a real bill.</li><li><strong>Never auto-retry a timeout.</strong> FBR may have accepted it. Mark the bill "unknown" and resolve it by hand. A blind retry files the bill twice, and only a Credit bill can undo it.</li><li><strong>One USIN, one bill, forever.</strong> Generate it once when the bill is saved. Resending a bill means reusing its USIN, never inventing a new one.</li><li><strong>Lock a bill once it has a Fiscal Invoice Number.</strong> No edits, no deletes, no date changes. Corrections go through a Credit (<code>InvoiceType 3</code>) and a new bill.</li><li><strong>Map each counter to its own POSID.</strong> One hard-coded POSID for the whole hospital files every counter's bills against one terminal.</li><li><strong>Build a fiscalization register screen first:</strong> a list of bills with their status and a manual Post button. Connections drop, and this screen is how the day gets reconciled.</li></ul>
+<hr />
+<h2>11. Hospitals and clinics</h2>
+<p>This section covers medical billing under income-tax POS integration.</p>
+<h3>11.1 Which tax, which authority</h3>
+<ul><li><strong>Punjab sales tax on services</strong> for hospitals is set by the <strong>Punjab Sales Tax on Services Act 2012, Second Schedule, serial 68</strong> (as amended by the Finance Act 2021-22). It taxes (i) medical consultation/visit fees <strong>exceeding Rs 1,500</strong> per consultation/visit and (ii) hospital bed/room charges <strong>exceeding Rs 6,000 per day</strong> per bed/room at <strong>0% without input tax adjustment</strong>, under heading <strong>9815.1000</strong> and other respective headings.</li><li>That tax is administered by the <strong>Punjab Revenue Authority (PRA)</strong>, not FBR. Ask your tax advisor whether PRA's own integration also applies.</li><li><strong>FBR integration</strong> for hospitals, clinics and labs comes from <strong>income tax</strong> (SRO 779(I)/2020, SRO 428(I)/2024). Register the POS for <strong>Income Tax</strong> (§4.1) and fiscalize <strong>every</strong> bill, whatever its tax rate.</li></ul>
+<h3>11.2 Mapping a hospital bill</h3>
+<div class="tablewrap"><table><thead><tr><th>Bill line</th><th><code>PCTCode</code></th><th><code>TaxRate</code></th><th><code>Quantity</code></th><th>Notes</th></tr></thead><tbody><tr><td>OPD consultation &gt; Rs 1,500</td><td><code>98151000</code></td><td><code>0</code></td><td>visits</td><td>Serial 68(i)</td></tr><tr><td>Consultation ≤ Rs 1,500</td><td><code>98151000</code></td><td><code>0</code></td><td>visits</td><td>Outside serial 68. Confirm treatment with your advisor; still fiscalize it</td></tr><tr><td>Room / bed &gt; Rs 6,000/day</td><td><code>98151000</code></td><td><code>0</code></td><td>days</td><td>Serial 68(ii). One line per room type, quantity = days</td></tr><tr><td>Room / bed ≤ Rs 6,000/day</td><td><code>98151000</code></td><td><code>0</code></td><td>days</td><td>Outside serial 68. Confirm treatment</td></tr><tr><td>Consultant visits during admission</td><td><code>98151000</code></td><td><code>0</code></td><td>visits</td><td></td></tr><tr><td>Lab, radiology, procedures, pharmacy</td><td>per advisor</td><td>per advisor</td><td></td><td>"Other respective headings". Get each heading and rate confirmed before go-live</td></tr></tbody></table></div>
+<p>Put each rate and heading on the <strong>service master</strong> as data, not in code, so an advisor's correction is a settings change.</p>
+<h3>11.3 Hospital-specific rules</h3>
+<ul><li><strong>Advance deposits are not bills.</strong> Fiscalize the final bill (OPD receipt or IPD discharge bill), not each deposit.</li><li><strong>Refunds</strong> on cancelled visits or overpaid deposits go as <code>InvoiceType 3</code> with <code>RefUSIN</code> pointing at the original bill.</li><li><strong>Panel/corporate patients:</strong> put the company's NTN in <code>BuyerNTN</code> and use the real <code>PaymentMode</code> (often <code>6</code> Cheque or <code>5</code> Mixed).</li><li><strong>Patient privacy:</strong> <code>BuyerName</code>, <code>BuyerCNIC</code> and phone are optional. Send them only when your advisor says you must. Never put a diagnosis in <code>ItemName</code>; use "Specialist consultation", not the condition.</li></ul>
+<hr />
+<h2>12. Sandbox → production</h2>
+<ol><li>Register the POS and generate the <strong>test POS ID</strong> (§4.5). For cloud, use the shared sandbox token (§4.6); for local, install the component in <strong>Test</strong> mode with the test POS ID and its Code.</li><li>Open <a class="xref" data-view="di-test" href="#di-test"><code>fbr-test-harness.html</code></a> → <strong>IMS Tester</strong>. Enter the token and test POSID, then run the scenarios in <code>fbr-ims-test-scenarios.json</code> (IMS-H01 … IMS-H06 for hospitals, IMS-R01/R02 for retail). Each must return <code>Code 100</code> and an invoice number.</li><li>Repeat the same cases <strong>from your own application</strong>. The tester proves FBR accepts a payload; only your app proves your mapping produces it from a real bill.</li><li>Print a test receipt and check the QR code scans on the real printer.</li><li>Switch to the <strong>production</strong> POS ID and token (cloud), or reinstall the component in Production mode (§5).</li><li>Post <strong>one real low-value bill</strong>, verify it in FBR's verification app or IRIS, then roll out counter by counter.</li></ol>
+<hr />
+<h2>13. Printing and display (mandatory)</h2>
+<p>Every receipt must carry:</p>
+<ul><li>the <strong>Fiscal Invoice Number</strong> returned by FBR,</li><li>a <strong>QR code</strong> encoding that number: QR version 2 (25×25 modules), printed <strong>0.70 × 0.70 to 1.0 × 1.0 inch</strong>,</li><li>the <strong>FBR POS logo</strong> image from the spec.</li></ul>
+<p>Generate the QR locally from the stored number, and print the FBR block <strong>only</strong> when a number exists, so an unfiscalized bill never carries an FBR mark.</p>
+<p>Each outlet must also <strong>display a sign board</strong> with FBR's official logo and the text <strong>"Integrated with FBR"</strong>, plus the <strong>registration number of each POS</strong>.</p>
+<hr />
+<h2>14. Data your app must store</h2>
+<p><strong>Per company:</strong> NTN, business name; cloud sandbox URL + token; production URL + token (encrypted); mode (cloud/local); environment switch. <strong>Per counter:</strong> test POS ID, production POS ID, and for local mode the PC it is installed on. <strong>Per bill:</strong> USIN, RefUSIN, Fiscal Invoice Number, sent timestamp, <code>Code</code>/<code>Response</code>/<code>Errors</code>, and the exact JSON sent. <strong>Per service/product:</strong> PCT code, tax rate, item invoice type (1 / 11 / 139).</p>
+<p><strong>FBR support:</strong> helpline@fbr.gov.pk · (051) 111-772-772.</p>
+<hr />
+<h2>15. Go-live checklist</h2>
+<ul><li class="task"><input type="checkbox" /> POS registered for the right tax (Income Tax for hospitals/clinics), branches and counters complete</li><li class="task"><input type="checkbox" /> Test POS ID and production POS ID recorded per physical counter</li><li class="task"><input type="checkbox" /> Token stored server-side, encrypted; certificate validation <strong>on</strong></li><li class="task"><input type="checkbox" /> <code>USIN</code> generated once per bill, unique per POS, never reused</li><li class="task"><input type="checkbox" /> Header totals computed from the mapped item array</li><li class="task"><input type="checkbox" /> <code>PCTCode</code> sent as 8 digits without a dot; <code>BuyerCNIC</code> 13 digits without dashes</li><li class="task"><input type="checkbox" /> <code>PaymentMode</code> 1–6 and <code>InvoiceType</code> 1–3 (not the spec's 21–29 numbering)</li><li class="task"><input type="checkbox" /> Success requires HTTP 2xx <strong>and</strong> <code>Code == "100"</code> <strong>and</strong> a non-empty invoice number</li><li class="task"><input type="checkbox" /> FBR call outside the DB transaction; timeouts never auto-retried</li><li class="task"><input type="checkbox" /> Fiscalized bills locked; refunds go as <code>InvoiceType 3</code> + <code>RefUSIN</code></li><li class="task"><input type="checkbox" /> Fiscalization register screen with manual Post per bill</li><li class="task"><input type="checkbox" /> Receipt prints the number, a scannable QR (0.7–1.0 inch) and the FBR logo</li><li class="task"><input type="checkbox" /> "Integrated with FBR" sign board and POS registration numbers displayed at each outlet</li><li class="task"><input type="checkbox" /> Every sandbox scenario that matches your business passes, from the app and not only the tester</li><li class="task"><input type="checkbox" /> Production POS ID + token set, one real bill verified</li></ul></article>
+    </div>
+  </section>
+
   <!-- ======================= SCENARIOS ====================== -->
   <section id="view-scenarios" class="view">
     <div class="doclayout">
@@ -538,7 +713,7 @@ totalValues = taxableValue + salesTaxApplicable + extraTax + furtherTax − stWi
     </div>
   </section>
 
-  <!-- ============ shared by both testers ============ -->
+  <!-- ============ shared by all testers ============ -->
   <div id="connection" class="hide">
     <div class="note">
       <strong>Read first.</strong>
@@ -547,7 +722,7 @@ totalValues = taxableValue + salesTaxApplicable + extraTax + furtherTax − stWi
       and leave the Proxy URL below set to <code>http://localhost:8787/proxy</code>.
       (2) Your token is kept in this browser&rsquo;s localStorage for convenience. Use a <strong>sandbox</strong> token here;
       production tokens belong in your server&rsquo;s secret store.
-      (3) <strong>DI Post</strong> and <strong>every POS call</strong> write real records. Only DI <em>Validate</em> is a dry run.
+      (3) <strong>DI Post</strong>, <strong>every POS call</strong> and <strong>every IMS call</strong> write real records. Only DI <em>Validate</em> is a dry run.
     </div>
     <div class="panel">
       <h2>Connection</h2>
@@ -707,6 +882,84 @@ totalValues = taxableValue + salesTaxApplicable + extraTax + furtherTax − stWi
       <div class="scroll"><table>
         <thead><tr><th style="width:120px">Sample</th><th style="width:70px">Verdict</th><th style="width:200px">Tracking #</th><th>Detail</th></tr></thead>
         <tbody id="posResults"><tr><td colspan="4" class="muted">No runs yet.</td></tr></tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <!-- ====================== IMS TESTER ====================== -->
+  <section id="view-ims-test" class="view">
+    <div class="note">
+      <strong>IMS has no validate endpoint.</strong> Every call below creates a fiscal invoice. Use the
+      <strong>test POS ID</strong> from <em>Generate Test POS</em> and stay on Cloud Sandbox (or a component installed
+      in Test mode) until you are ready to file real bills. Field names are PascalCase &mdash; see the IMS Guide.
+    </div>
+
+    <div class="panel">
+      <h2>IMS &mdash; endpoint, POS ID &amp; token</h2>
+      <div class="grid">
+        <div>
+          <label>Mode / environment</label>
+          <select id="imsEnv">
+            <option value="sb">Cloud Sandbox (esp.fbr.gov.pk:8244)</option>
+            <option value="prod">Cloud Production (gw.fbr.gov.pk)</option>
+            <option value="local">Local Fiscal Component (localhost:8524)</option>
+          </select>
+        </div>
+        <div>
+          <label>POSID <span class="muted">(IRIS &rarr; Generate Test POS &rarr; &ldquo;Pos Registration Number&rdquo;)</span></label>
+          <input id="imsPosId" placeholder="110014" inputmode="numeric" />
+        </div>
+        <div style="grid-column:1/-1">
+          <label>Endpoint URL <span class="muted">(auto-filled; edit if FBR moves the host)</span></label>
+          <input id="imsUrl" />
+        </div>
+        <div style="grid-column:1/-1" id="imsTokenWrap">
+          <label>Bearer token <span class="muted">(cloud only &mdash; sandbox uses FBR&rsquo;s shared token 1298b5eb-b252-3d97-8622-a4a69d5bf818 with <em>your</em> test POSID; production uses your own token)</span></label>
+          <input id="imsToken" type="password" placeholder="paste the token issued against your registered POS" />
+        </div>
+      </div>
+      <div class="row">
+        <label style="display:flex;gap:6px;align-items:center;margin:0;font-weight:600;color:var(--ink)">
+          <input type="checkbox" id="imsFreshUsin" checked style="width:auto" /> New USIN and current DateTime on every load
+        </label>
+        <button class="ghost" id="imsWhich">Check token (which environment?)</button>
+        <button class="ghost hide" id="imsHealth">Check local service</button>
+      </div>
+    </div>
+
+    <div class="split">
+      <div class="panel">
+        <h2>Scenario &amp; payload</h2>
+        <div><label>Scenario</label><select id="imsScenario"></select></div>
+        <p class="muted" id="imsScenarioDesc" style="margin:8px 0 0"></p>
+        <div class="row">
+          <button class="ghost" id="imsLoad">Load payload</button>
+          <button class="ghost" id="imsFormat">Format JSON</button>
+          <button class="ghost" id="imsTotals">Recompute totals</button>
+          <button class="ghost" id="imsCurl">Copy as curl</button>
+        </div>
+        <div style="margin-top:10px">
+          <label>Request body (editable)</label>
+          <textarea id="imsBody" spellcheck="false"></textarea>
+        </div>
+        <div class="row">
+          <button class="act" id="imsRun">Send to FBR IMS</button>
+          <button class="ghost" id="imsRunAll">Run ALL scenarios</button>
+          <button class="ghost" id="imsExport">Export results (CSV)</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Response</h2>
+        <pre class="out" id="imsOut">Nothing sent yet.</pre>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Results</h2>
+      <div class="scroll"><table>
+        <thead><tr><th style="width:90px">Scenario</th><th style="width:70px">Verdict</th><th style="width:190px">USIN</th><th style="width:200px">Fiscal invoice #</th><th>Detail</th></tr></thead>
+        <tbody id="imsResults"><tr><td colspan="5" class="muted">No runs yet.</td></tr></tbody>
       </table></div>
     </div>
   </section>
@@ -1982,6 +2235,378 @@ const POS_SAMPLES = [
   }
 ];
 
+/* IMS (Tier-1 / Income Tax POS) — scenarios live in fbr-ims-test-scenarios.json. */
+const IMS_SCENARIOS = [
+  {
+    "id": "IMS-H01",
+    "title": "OPD consultation above Rs 1,500 (cash)",
+    "description": "Baseline hospital bill. One specialist consultation at Rs 2,500, serial 68(i), 0% under heading 9815.1000. Proves POSID, USIN, totals and the Fiscal Invoice Number round trip. Run this first; IMS-H05 refunds it.",
+    "payload": {
+      "InvoiceNumber": "",
+      "POSID": 110014,
+      "USIN": "OPD-TEST-0001",
+      "RefUSIN": null,
+      "DateTime": "2026-10-08 11:00:00",
+      "BuyerName": "Test Patient",
+      "BuyerNTN": "",
+      "BuyerCNIC": "3520212345671",
+      "BuyerPhoneNumber": "03001234567",
+      "TotalSaleValue": 2500,
+      "TotalTaxCharged": 0.0,
+      "TotalQuantity": 1,
+      "Discount": 0,
+      "FurtherTax": 0,
+      "TotalBillAmount": 2500.0,
+      "PaymentMode": 1,
+      "InvoiceType": 1,
+      "Items": [
+        {
+          "ItemCode": "CONS-SPEC",
+          "ItemName": "Specialist consultation",
+          "PCTCode": "98151000",
+          "Quantity": 1,
+          "TaxRate": 0,
+          "SaleValue": 2500,
+          "Discount": 0,
+          "TaxCharged": 0.0,
+          "FurtherTax": 0,
+          "TotalAmount": 2500.0,
+          "InvoiceType": 1,
+          "RefUSIN": null
+        }
+      ]
+    }
+  },
+  {
+    "id": "IMS-H02",
+    "title": "Consultation at or below Rs 1,500",
+    "description": "A Rs 1,200 general consultation, outside serial 68. Confirm its tax treatment with your advisor; the sample sends 0%. Proves low-value bills are fiscalized too, not skipped.",
+    "payload": {
+      "InvoiceNumber": "",
+      "POSID": 110014,
+      "USIN": "OPD-TEST-0002",
+      "RefUSIN": null,
+      "DateTime": "2026-10-08 11:00:00",
+      "BuyerName": "Test Patient",
+      "BuyerNTN": "",
+      "BuyerCNIC": "3520212345671",
+      "BuyerPhoneNumber": "03001234567",
+      "TotalSaleValue": 1200,
+      "TotalTaxCharged": 0.0,
+      "TotalQuantity": 1,
+      "Discount": 0,
+      "FurtherTax": 0,
+      "TotalBillAmount": 1200.0,
+      "PaymentMode": 1,
+      "InvoiceType": 1,
+      "Items": [
+        {
+          "ItemCode": "CONS-GP",
+          "ItemName": "General consultation",
+          "PCTCode": "98151000",
+          "Quantity": 1,
+          "TaxRate": 0,
+          "SaleValue": 1200,
+          "Discount": 0,
+          "TaxCharged": 0.0,
+          "FurtherTax": 0,
+          "TotalAmount": 1200.0,
+          "InvoiceType": 1,
+          "RefUSIN": null
+        }
+      ]
+    }
+  },
+  {
+    "id": "IMS-H03",
+    "title": "IPD private room above Rs 6,000/day, 3 days (card)",
+    "description": "Room charges of Rs 8,000/day for 3 days, serial 68(ii). One line with Quantity = days. Proves quantity-based lines and PaymentMode 2 (Card).",
+    "payload": {
+      "InvoiceNumber": "",
+      "POSID": 110014,
+      "USIN": "IPD-TEST-0001",
+      "RefUSIN": null,
+      "DateTime": "2026-10-08 11:00:00",
+      "BuyerName": "Test Patient",
+      "BuyerNTN": "",
+      "BuyerCNIC": "3520212345671",
+      "BuyerPhoneNumber": "03001234567",
+      "TotalSaleValue": 24000,
+      "TotalTaxCharged": 0.0,
+      "TotalQuantity": 3,
+      "Discount": 0,
+      "FurtherTax": 0,
+      "TotalBillAmount": 24000.0,
+      "PaymentMode": 2,
+      "InvoiceType": 1,
+      "Items": [
+        {
+          "ItemCode": "ROOM-PVT",
+          "ItemName": "Private room (per day)",
+          "PCTCode": "98151000",
+          "Quantity": 3,
+          "TaxRate": 0,
+          "SaleValue": 24000,
+          "Discount": 0,
+          "TaxCharged": 0.0,
+          "FurtherTax": 0,
+          "TotalAmount": 24000.0,
+          "InvoiceType": 1,
+          "RefUSIN": null
+        }
+      ]
+    }
+  },
+  {
+    "id": "IMS-H04",
+    "title": "IPD discharge bill: room + consultant visits with 10% concession (mixed payment)",
+    "description": "Four days in a semi-private room (Rs 7,000/day) plus four consultant visits (Rs 3,000 each) with a Rs 1,200 concession. Proves SaleValue is net of discount, Discount is reported separately, and multi-line header totals add up. PaymentMode 5 (Mixed).",
+    "payload": {
+      "InvoiceNumber": "",
+      "POSID": 110014,
+      "USIN": "IPD-TEST-0002",
+      "RefUSIN": null,
+      "DateTime": "2026-10-08 11:00:00",
+      "BuyerName": "Test Patient",
+      "BuyerNTN": "",
+      "BuyerCNIC": "3520212345671",
+      "BuyerPhoneNumber": "03001234567",
+      "TotalSaleValue": 38800,
+      "TotalTaxCharged": 0.0,
+      "TotalQuantity": 8,
+      "Discount": 1200,
+      "FurtherTax": 0,
+      "TotalBillAmount": 38800.0,
+      "PaymentMode": 5,
+      "InvoiceType": 1,
+      "Items": [
+        {
+          "ItemCode": "ROOM-SEMI",
+          "ItemName": "Semi-private room (per day)",
+          "PCTCode": "98151000",
+          "Quantity": 4,
+          "TaxRate": 0,
+          "SaleValue": 28000,
+          "Discount": 0,
+          "TaxCharged": 0.0,
+          "FurtherTax": 0,
+          "TotalAmount": 28000.0,
+          "InvoiceType": 1,
+          "RefUSIN": null
+        },
+        {
+          "ItemCode": "VISIT-CONS",
+          "ItemName": "Consultant visit",
+          "PCTCode": "98151000",
+          "Quantity": 4,
+          "TaxRate": 0,
+          "SaleValue": 10800,
+          "Discount": 1200,
+          "TaxCharged": 0.0,
+          "FurtherTax": 0,
+          "TotalAmount": 10800.0,
+          "InvoiceType": 1,
+          "RefUSIN": null
+        }
+      ]
+    }
+  },
+  {
+    "id": "IMS-H05",
+    "title": "Refund of IMS-H01 (Credit, InvoiceType 3)",
+    "description": "Reverses the OPD bill from IMS-H01. Header and item InvoiceType 3, RefUSIN = the original bill's USIN. The tester fills RefUSIN from the last accepted IMS-H01 run automatically.",
+    "payload": {
+      "InvoiceNumber": "",
+      "POSID": 110014,
+      "USIN": "OPD-TEST-0001-R",
+      "RefUSIN": "OPD-TEST-0001",
+      "DateTime": "2026-10-08 11:00:00",
+      "BuyerName": "Test Patient",
+      "BuyerNTN": "",
+      "BuyerCNIC": "3520212345671",
+      "BuyerPhoneNumber": "03001234567",
+      "TotalSaleValue": 2500,
+      "TotalTaxCharged": 0.0,
+      "TotalQuantity": 1,
+      "Discount": 0,
+      "FurtherTax": 0,
+      "TotalBillAmount": 2500.0,
+      "PaymentMode": 1,
+      "InvoiceType": 3,
+      "Items": [
+        {
+          "ItemCode": "CONS-SPEC",
+          "ItemName": "Specialist consultation (refund)",
+          "PCTCode": "98151000",
+          "Quantity": 1,
+          "TaxRate": 0,
+          "SaleValue": 2500,
+          "Discount": 0,
+          "TaxCharged": 0.0,
+          "FurtherTax": 0,
+          "TotalAmount": 2500.0,
+          "InvoiceType": 3,
+          "RefUSIN": "OPD-TEST-0001"
+        }
+      ]
+    }
+  },
+  {
+    "id": "IMS-H06",
+    "title": "Panel / corporate patient billed by cheque",
+    "description": "A company-paid admission: consultation Rs 3,000 plus 2 days in a Rs 9,000/day room. BuyerName and BuyerNTN carry the panel company. PaymentMode 6 (Cheque).",
+    "payload": {
+      "InvoiceNumber": "",
+      "POSID": 110014,
+      "USIN": "IPD-TEST-0003",
+      "RefUSIN": null,
+      "DateTime": "2026-10-08 11:00:00",
+      "BuyerName": "Demo Textiles (Pvt) Ltd",
+      "BuyerNTN": "1234567-8",
+      "BuyerCNIC": "",
+      "BuyerPhoneNumber": "04211112222",
+      "TotalSaleValue": 21000,
+      "TotalTaxCharged": 0.0,
+      "TotalQuantity": 3,
+      "Discount": 0,
+      "FurtherTax": 0,
+      "TotalBillAmount": 21000.0,
+      "PaymentMode": 6,
+      "InvoiceType": 1,
+      "Items": [
+        {
+          "ItemCode": "CONS-SPEC",
+          "ItemName": "Specialist consultation",
+          "PCTCode": "98151000",
+          "Quantity": 1,
+          "TaxRate": 0,
+          "SaleValue": 3000,
+          "Discount": 0,
+          "TaxCharged": 0.0,
+          "FurtherTax": 0,
+          "TotalAmount": 3000.0,
+          "InvoiceType": 1,
+          "RefUSIN": null
+        },
+        {
+          "ItemCode": "ROOM-PVT",
+          "ItemName": "Private room (per day)",
+          "PCTCode": "98151000",
+          "Quantity": 2,
+          "TaxRate": 0,
+          "SaleValue": 18000,
+          "Discount": 0,
+          "TaxCharged": 0.0,
+          "FurtherTax": 0,
+          "TotalAmount": 18000.0,
+          "InvoiceType": 1,
+          "RefUSIN": null
+        }
+      ]
+    }
+  },
+  {
+    "id": "IMS-R01",
+    "title": "Retail: two items at 18%, one discounted",
+    "description": "For Tier-1 retailers. Two garments at 18%, the second with a Rs 100 discount. Proves TaxCharged = SaleValue \u00d7 rate and that discount comes off before tax.",
+    "payload": {
+      "InvoiceNumber": "",
+      "POSID": 110014,
+      "USIN": "POS-TEST-0001",
+      "RefUSIN": null,
+      "DateTime": "2026-10-08 11:00:00",
+      "BuyerName": "",
+      "BuyerNTN": "",
+      "BuyerCNIC": "",
+      "BuyerPhoneNumber": "",
+      "TotalSaleValue": 1500,
+      "TotalTaxCharged": 270.0,
+      "TotalQuantity": 2,
+      "Discount": 100,
+      "FurtherTax": 0,
+      "TotalBillAmount": 1770.0,
+      "PaymentMode": 1,
+      "InvoiceType": 1,
+      "Items": [
+        {
+          "ItemCode": "SKU-001",
+          "ItemName": "Cotton T-shirt",
+          "PCTCode": "61091000",
+          "Quantity": 1,
+          "TaxRate": 18,
+          "SaleValue": 1000,
+          "Discount": 0,
+          "TaxCharged": 180.0,
+          "FurtherTax": 0,
+          "TotalAmount": 1180.0,
+          "InvoiceType": 1,
+          "RefUSIN": null
+        },
+        {
+          "ItemCode": "SKU-002",
+          "ItemName": "Cotton T-shirt (promo)",
+          "PCTCode": "61091000",
+          "Quantity": 1,
+          "TaxRate": 18,
+          "SaleValue": 500,
+          "Discount": 100,
+          "TaxCharged": 90.0,
+          "FurtherTax": 0,
+          "TotalAmount": 590.0,
+          "InvoiceType": 1,
+          "RefUSIN": null
+        }
+      ]
+    }
+  },
+  {
+    "id": "IMS-R02",
+    "title": "Retail: Third Schedule item (item InvoiceType 11)",
+    "description": "A Third Schedule (retail-price) item uses item InvoiceType 11, and 12 for its return. Tax on these is due on the printed retail price; check your figures against the label before relying on this sample.",
+    "payload": {
+      "InvoiceNumber": "",
+      "POSID": 110014,
+      "USIN": "POS-TEST-0002",
+      "RefUSIN": null,
+      "DateTime": "2026-10-08 11:00:00",
+      "BuyerName": "",
+      "BuyerNTN": "",
+      "BuyerCNIC": "",
+      "BuyerPhoneNumber": "",
+      "TotalSaleValue": 100,
+      "TotalTaxCharged": 18.0,
+      "TotalQuantity": 1,
+      "Discount": 0,
+      "FurtherTax": 0,
+      "TotalBillAmount": 118.0,
+      "PaymentMode": 1,
+      "InvoiceType": 1,
+      "Items": [
+        {
+          "ItemCode": "BEV-500",
+          "ItemName": "Soft drink 500ml",
+          "PCTCode": "22021010",
+          "Quantity": 1,
+          "TaxRate": 18,
+          "SaleValue": 100,
+          "Discount": 0,
+          "TaxCharged": 18.0,
+          "FurtherTax": 0,
+          "TotalAmount": 118.0,
+          "InvoiceType": 11,
+          "RefUSIN": null
+        }
+      ]
+    }
+  }
+];
+const IMS_URLS = {
+  sb:    'https://esp.fbr.gov.pk:8244/FBR/v1/api/Live/PostData',
+  prod:  'https://gw.fbr.gov.pk/imsp/v1/api/Live/PostData',
+  local: 'http://localhost:8524/api/IMSFiscal/GetInvoiceNumberByModel'
+};
+const IMS_HEALTH_URL = 'http://localhost:8524/api/IMSFiscal/Get';
+
 /* ------------------------------------------------------------------ *
  * Helpers
  * ------------------------------------------------------------------ */
@@ -1990,7 +2615,8 @@ const LS = 'fbr-harness-v1';
 const esc = s => String(s == null ? '' : s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 
 const STATE_KEYS = ['proxy','timeout','diEnv','diOp','diUrl','diToken','sNtn','sName','sProv','sAddr',
-                    'posEnv','posUrl','posToken','posBpos','posSellerNtn','posSellerName'];
+                    'posEnv','posUrl','posToken','posBpos','posSellerNtn','posSellerName',
+                    'imsEnv','imsUrl','imsToken','imsPosId'];
 
 function saveState(){
   const s = {};
@@ -2007,14 +2633,25 @@ function loadState(){
 const diEndpoint = () => DI_BASE + $('diOp').value + ($('diEnv').value === 'sb' ? '_sb' : '');
 function syncDiUrl(){ $('diUrl').value = diEndpoint(); saveState(); }
 function syncPosUrl(){ $('posUrl').value = POS_URLS[$('posEnv').value]; saveState(); }
+function syncImsUrl(){
+  const local = $('imsEnv').value === 'local';
+  $('imsUrl').value = IMS_URLS[$('imsEnv').value];
+  $('imsTokenWrap').classList.toggle('hide', local);
+  $('imsHealth').classList.toggle('hide', !local);
+  $('imsWhich').classList.toggle('hide', local);
+  saveState();
+}
 
 function parseBody(id, out){
   try { return JSON.parse($(id).value); }
   catch(e){ $(out).textContent = 'The request body is not valid JSON.\n\n' + e.message; return null; }
 }
 
-/* Sends through the relay when one is configured, otherwise directly (and explains CORS on failure). */
-async function send(url, token, payload){
+/* Sends through the relay when one is configured, otherwise directly (and explains CORS on failure).
+ * method is 'POST' (default) or 'GET' — GET is only used for the IMS local health check. */
+async function send(url, token, payload, method){
+  method = method || 'POST';
+  const body = method === 'GET' ? undefined : JSON.stringify(payload);
   const proxy = $('proxy').value.trim();
   const ms = Math.max(5, Number($('timeout').value) || 45) * 1000;
   const ctrl = new AbortController();
@@ -2024,19 +2661,17 @@ async function send(url, token, payload){
     let httpStatus, text;
     if (proxy) {
       const r = await fetch(proxy, {
-        method:'POST', signal: ctrl.signal,
-        headers:{ 'Content-Type':'application/json', 'x-fbr-target':url, 'x-fbr-token':token },
-        body: JSON.stringify(payload)
+        method, signal: ctrl.signal,
+        headers:{ 'Content-Type':'application/json', 'x-fbr-target':url, 'x-fbr-token':token || '' },
+        body
       });
       const relay = await r.json();
       if (relay.relayError) return { ok:false, ms:Date.now()-started, error:'The relay could not reach FBR: ' + relay.relayError };
       httpStatus = relay.httpStatus; text = relay.body;
     } else {
-      const r = await fetch(url, {
-        method:'POST', signal: ctrl.signal,
-        headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer ' + token },
-        body: JSON.stringify(payload)
-      });
+      const headers = { 'Content-Type':'application/json' };
+      if (token) headers.Authorization = 'Bearer ' + token;
+      const r = await fetch(url, { method, signal: ctrl.signal, headers, body });
       httpStatus = r.status; text = await r.text();
     }
     let json = null;
@@ -2055,9 +2690,9 @@ async function send(url, token, payload){
   } finally { clearTimeout(timer); }
 }
 
-function curlFor(url, token, payload){
+function curlFor(url, token, payload, noAuth){
   return "curl -X POST '" + url + "' \\\n" +
-         "  -H 'Authorization: Bearer " + (token || 'YOUR_TOKEN') + "' \\\n" +
+         (noAuth ? '' : "  -H 'Authorization: Bearer " + (token || 'YOUR_TOKEN') + "' \\\n") +
          "  -H 'Content-Type: application/json' \\\n" +
          "  -d '" + JSON.stringify(payload).replace(/'/g, "'\\''") + "'";
 }
@@ -2077,10 +2712,26 @@ function download(name, text, type){
 /* ------------------------------------------------------------------ *
  * Verdicts — the acceptance checks the guides insist on
  * ------------------------------------------------------------------ */
+/* FBR's gateway (WSO2) answers auth problems before the API sees the payload. Its fault codes say which
+ * problem it is — 900908 in particular means the token is real but issued for a different FBR API. */
+const GATEWAY_FAULTS = {
+  900901: 'Invalid token — FBR does not recognise it. Check for a typo or an expired token.',
+  900902: 'No token sent. Paste the Bearer token.',
+  900908: 'Token is valid but NOT allowed for this API or environment. Either it belongs to another FBR channel (a DI or POS DI token used here), or it is a PRODUCTION token used on the SANDBOX URL (or the reverse). In the IMS Tester, "Check token" tells you which.',
+  900910: 'Token is valid but lacks the scope for this resource. Regenerate it for this API.'
+};
+function gatewayFault(res){
+  if (res.httpStatus !== 401 && res.httpStatus !== 403) return null;
+  let code = null;
+  try { code = JSON.parse(res.text).fault.code; } catch(e){}
+  const why = GATEWAY_FAULTS[code] ||
+    (res.httpStatus === 401 ? 'the token is invalid, missing, or wrong for this environment.' : 'access forbidden for this token.');
+  return 'HTTP ' + res.httpStatus + (code ? ' (gateway ' + code + ')' : '') + ' — ' + why;
+}
 /** DI: header statusCode "00" AND status Valid AND every item "00" (DI guide §8.2). */
 function diVerdict(res){
   if (!res.ok) return { pass:false, detail:res.error, invoice:'' };
-  if (res.httpStatus === 401) return { pass:false, detail:'HTTP 401 — the token is invalid, missing, or wrong for this environment.', invoice:'' };
+  const gw = gatewayFault(res); if (gw) return { pass:false, detail:gw, invoice:'' };
   if (res.httpStatus >= 400) return { pass:false, detail:'HTTP ' + res.httpStatus + ' — ' + (res.text || '').slice(0,300), invoice:'' };
   if (!res.json) return { pass:false, detail:'FBR replied with non-JSON (gateway or maintenance page): ' + (res.text||'').slice(0,300), invoice:'' };
 
@@ -2105,7 +2756,7 @@ function diVerdict(res){
 /** POS: HTTP 2xx AND body statusCode 200 AND a non-empty result (POS guide §8.2). */
 function posVerdict(res){
   if (!res.ok) return { pass:false, detail:res.error, tracking:'' };
-  if (res.httpStatus === 401) return { pass:false, detail:'HTTP 401 — the token is invalid, missing, or wrong for this environment.', tracking:'' };
+  const gw = gatewayFault(res); if (gw) return { pass:false, detail:gw, tracking:'' };
   if (res.httpStatus >= 400) return { pass:false, detail:'HTTP ' + res.httpStatus + ' — ' + (res.text || '').slice(0,300), tracking:'' };
   if (!res.json) return { pass:false, detail:'FBR replied with non-JSON (gateway or maintenance page): ' + (res.text||'').slice(0,300), tracking:'' };
   if (Number(res.json.statusCode) !== 200)
@@ -2113,6 +2764,35 @@ function posVerdict(res){
   if (!res.json.result)
     return { pass:false, detail:'Accepted but no tracking number returned — do not treat this as filed.', tracking:'' };
   return { pass:true, detail:'Accepted.', tracking: res.json.result };
+}
+
+/** Reads a field regardless of case — IMS replies are not consistent about it. */
+function pick(obj, name){
+  if (!obj || typeof obj !== 'object') return undefined;
+  const k = Object.keys(obj).find(x => x.toLowerCase() === name.toLowerCase());
+  return k === undefined ? undefined : obj[k];
+}
+
+/** IMS: HTTP 2xx AND body Code "100" AND a non-empty InvoiceNumber / FBRInvoiceNumber (IMS guide §9.2). */
+function imsVerdict(res){
+  if (!res.ok) return { pass:false, detail:res.error, invoice:'' };
+  const gw = gatewayFault(res); if (gw) return { pass:false, detail:gw, invoice:'' };
+  if (res.httpStatus >= 400) return { pass:false, detail:'HTTP ' + res.httpStatus + ' — ' + (res.text || '').slice(0,300), invoice:'' };
+  let j = res.json;
+  // The spec shows the reply as a JSON string that itself holds JSON; unwrap one level if so.
+  if (typeof j === 'string') { try { j = JSON.parse(j); } catch(e){} }
+  if (!j || typeof j !== 'object') return { pass:false, detail:'FBR replied with non-JSON (gateway or maintenance page): ' + (res.text||'').slice(0,300), invoice:'' };
+
+  const code = String(pick(j, 'Code') == null ? '' : pick(j, 'Code'));
+  const inv  = pick(j, 'InvoiceNumber') || pick(j, 'FBRInvoiceNumber') || '';
+  const msg  = pick(j, 'Response') || '';
+  const errs = pick(j, 'Errors');
+  const errText = errs ? (typeof errs === 'string' ? errs : JSON.stringify(errs)) : '';
+  if (code !== '100')
+    return { pass:false, detail:'Code ' + (code || '(none)') + ' — ' + (msg || 'rejected with no message') + (errText ? ' | ' + errText : ''), invoice:'' };
+  if (!String(inv).trim())
+    return { pass:false, detail:'Code 100 but no invoice number returned — do not treat this bill as fiscalized.', invoice:'' };
+  return { pass:true, detail: msg || 'Fiscalized.', invoice:String(inv) };
 }
 
 /* ------------------------------------------------------------------ *
@@ -2303,6 +2983,229 @@ $('posRun').addEventListener('click', async e => {
 });
 
 /* ------------------------------------------------------------------ *
+ * IMS tester
+ * ------------------------------------------------------------------ */
+const imsRows = [];
+const r2 = n => Math.round((Number(n) || 0) * 100) / 100;
+const pad = n => String(n).padStart(2, '0');
+function nowStamp(){
+  const d = new Date();
+  return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) + ' ' +
+         pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+}
+/* A USIN must never repeat for a POS, so the tester suffixes the scenario's base USIN with a timestamp. */
+function freshUsin(base){
+  const d = new Date();
+  const sfx = String(d.getFullYear()).slice(2) + pad(d.getMonth()+1) + pad(d.getDate()) +
+              pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds()) + String(d.getMilliseconds()).padStart(3,'0');
+  return (String(base).replace(/-\d{15}$/, '') + '-' + sfx).slice(0, 50);
+}
+
+function fillImsScenarios(){
+  $('imsScenario').innerHTML = IMS_SCENARIOS
+    .map(s => '<option value="' + s.id + '">' + s.id + ' — ' + esc(s.title) + '</option>').join('');
+  describeImsScenario();
+}
+function describeImsScenario(){
+  const s = IMS_SCENARIOS.find(x => x.id === $('imsScenario').value);
+  $('imsScenarioDesc').textContent = s ? s.description : '';
+}
+function imsPayload(id){
+  const s = IMS_SCENARIOS.find(x => x.id === id);
+  const p = JSON.parse(JSON.stringify(s.payload));
+  const pos = $('imsPosId').value.trim();
+  if (pos) p.POSID = Number(pos);
+  if ($('imsFreshUsin').checked) { p.USIN = freshUsin(p.USIN); p.DateTime = nowStamp(); }
+  // A Credit/Debit refers to an earlier bill: use the USIN of the last accepted original if we have one.
+  if (p.RefUSIN) {
+    const origId = id.replace(/^IMS-H05$/, 'IMS-H01');
+    const orig = imsRows.find(r => r.id === origId && r.pass);
+    if (orig) {
+      p.RefUSIN = orig.usin;
+      (p.Items || []).forEach(it => { if (it.RefUSIN) it.RefUSIN = orig.usin; });
+    }
+  }
+  return p;
+}
+function loadImsScenario(){
+  if (!$('imsScenario').value) return;
+  $('imsBody').value = JSON.stringify(imsPayload($('imsScenario').value), null, 2);
+}
+
+/* Header totals are sums of the item lines (IMS guide §8). Returns item lines that don't add up. */
+function imsItemProblems(p){
+  const out = [];
+  (p.Items || []).forEach((it, n) => {
+    const tax = r2(Number(it.SaleValue) * Number(it.TaxRate) / 100);
+    const tot = r2(Number(it.SaleValue) + Number(it.TaxCharged) + (Number(it.FurtherTax) || 0));
+    if (Math.abs(tax - r2(it.TaxCharged)) > 0.01) out.push('Item ' + (n+1) + ': TaxCharged ' + it.TaxCharged + ' but SaleValue × TaxRate = ' + tax);
+    if (Math.abs(tot - r2(it.TotalAmount)) > 0.01) out.push('Item ' + (n+1) + ': TotalAmount ' + it.TotalAmount + ' but SaleValue + TaxCharged + FurtherTax = ' + tot);
+  });
+  return out;
+}
+function imsTotals(p){
+  const it = p.Items || [];
+  const sum = f => r2(it.reduce((a, x) => a + (Number(x[f]) || 0), 0));
+  return { TotalSaleValue:sum('SaleValue'), TotalTaxCharged:sum('TaxCharged'), TotalQuantity:sum('Quantity'),
+           Discount:sum('Discount'), FurtherTax:sum('FurtherTax'), TotalBillAmount:sum('TotalAmount') };
+}
+function recomputeImsTotals(){
+  const p = parseBody('imsBody','imsOut'); if (!p) return;
+  Object.assign(p, imsTotals(p));
+  $('imsBody').value = JSON.stringify(p, null, 2);
+  const probs = imsItemProblems(p);
+  $('imsOut').textContent = 'Header totals recomputed from the ' + (p.Items || []).length + ' item line(s).' +
+    (probs.length ? '\n\nItem lines that do not add up (fix these by hand):\n- ' + probs.join('\n- ') : '');
+}
+
+/* The mistakes the spec itself invites (IMS guide §7). Returned as warnings; the user may send anyway. */
+function imsLint(p){
+  const w = [];
+  if (p.InvoiceNumber) w.push('InvoiceNumber should be "" — FBR fills it in.');
+  if (typeof p.POSID !== 'number' || !p.POSID) w.push('POSID must be a non-zero number.');
+  else if (p.POSID === 110014)
+    w.push('POSID 110014 is the spec\'s shared sample. Enter your own test POS ID (IRIS → Generate Test POS) in the POSID box and reload the payload.');
+  if (!p.USIN) w.push('USIN is required.');
+  if (!/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(String(p.DateTime || ''))) w.push('DateTime should be "yyyy-MM-dd HH:mm:ss".');
+  if (p.BuyerCNIC && !/^\d{13}$/.test(p.BuyerCNIC)) w.push('BuyerCNIC should be 13 digits without dashes.');
+  if ([1,2,3,4,5,6].indexOf(p.PaymentMode) === -1) w.push('PaymentMode must be 1–6 (the spec\'s 21–26 numbering is a typo).');
+  if ([1,2,3].indexOf(p.InvoiceType) === -1) w.push('InvoiceType must be 1, 2 or 3 (the spec\'s 27–29 numbering is a typo).');
+  if ((p.InvoiceType === 2 || p.InvoiceType === 3) && !p.RefUSIN) w.push('A Debit/Credit bill needs RefUSIN = the original bill\'s USIN.');
+  if (!Array.isArray(p.Items) || !p.Items.length) w.push('Items must contain at least one line.');
+  (p.Items || []).forEach((it, n) => {
+    if (!/^\d{1,8}$/.test(String(it.PCTCode || ''))) w.push('Item ' + (n+1) + ': PCTCode must be up to 8 digits, no dot (9815.1000 → 98151000).');
+    if (typeof it.TaxRate !== 'number') w.push('Item ' + (n+1) + ': TaxRate must be a number (18), not a string ("18%").');
+    if ([1,3,11,12,139].indexOf(it.InvoiceType) === -1) w.push('Item ' + (n+1) + ': InvoiceType must be 1, 3, 11, 12 or 139.');
+  });
+  const t = imsTotals(p);
+  Object.keys(t).forEach(k => { if (Math.abs(r2(p[k]) - t[k]) > 0.01) w.push(k + ' is ' + p[k] + ' but the items sum to ' + t[k] + ' — use Recompute totals.'); });
+  return w.concat(imsItemProblems(p));
+}
+
+function renderImsRows(){
+  const tb = $('imsResults');
+  if (!imsRows.length) { tb.innerHTML = '<tr><td colspan="5" class="muted">No runs yet.</td></tr>'; return; }
+  tb.innerHTML = imsRows.map(r =>
+    '<tr><td><code>' + esc(r.id) + '</code></td>' +
+    '<td><span class="pill ' + (r.pass ? 'ok">PASS' : 'bad">FAIL') + '</span></td>' +
+    '<td><code>' + esc(r.usin) + '</code></td>' +
+    '<td><code>' + esc(r.invoice) + '</code></td>' +
+    '<td>' + esc(r.detail) + '</td></tr>').join('');
+}
+
+async function runIms(id, payload){
+  const env = $('imsEnv').value;
+  const url = $('imsUrl').value.trim();
+  const token = env === 'local' ? '' : $('imsToken').value.trim();
+  if (env !== 'local' && !token) { $('imsOut').textContent = 'Paste your IMS token first (not needed for the local component).'; return null; }
+
+  // Resending an accepted USIN would file a duplicate — refuse and give it a fresh one.
+  if (imsRows.some(r => r.pass && r.usin === payload.USIN)) {
+    if (!$('imsFreshUsin').checked) { $('imsOut').textContent = 'USIN ' + payload.USIN + ' was already fiscalized in this session. Change it, or tick "New USIN".'; return null; }
+    payload.USIN = freshUsin(payload.USIN);
+    $('imsBody').value = JSON.stringify(payload, null, 2);
+  }
+
+  $('imsOut').textContent = 'Sending ' + id + ' to ' + url + ' …';
+  const res = await send(url, token, payload);
+  const v = imsVerdict(res);
+  $('imsOut').textContent =
+    id + '  ' + (v.pass ? 'PASS' : 'FAIL') + '   (' + res.ms + 'ms' +
+    (res.httpStatus ? ', HTTP ' + res.httpStatus : '') + ')\n' + v.detail +
+    (v.pass ? '\nFiscal invoice number: ' + v.invoice + '  — print it with a QR code (0.7–1.0 inch) and the FBR logo.' : '') +
+    '\n\n--- request ---\n' + JSON.stringify(payload, null, 2) +
+    '\n\n--- response ---\n' + (res.ok ? (res.json ? JSON.stringify(res.json, null, 2) : res.text) : res.error);
+
+  const i = imsRows.findIndex(r => r.id === id);
+  const row = { id:id, pass:v.pass, usin:payload.USIN, invoice:v.invoice, detail:v.detail };
+  if (i >= 0) imsRows[i] = row; else imsRows.push(row);
+  renderImsRows();
+  return v;
+}
+
+$('imsScenario').addEventListener('change', () => { describeImsScenario(); loadImsScenario(); });
+$('imsEnv').addEventListener('change', syncImsUrl);
+$('imsLoad').addEventListener('click', loadImsScenario);
+$('imsFormat').addEventListener('click', () => {
+  const o = parseBody('imsBody','imsOut'); if (o) $('imsBody').value = JSON.stringify(o, null, 2);
+});
+$('imsTotals').addEventListener('click', recomputeImsTotals);
+$('imsCurl').addEventListener('click', e => {
+  const o = parseBody('imsBody','imsOut');
+  if (o) copy(curlFor($('imsUrl').value.trim(), $('imsToken').value.trim(), o, $('imsEnv').value === 'local'), e.target);
+});
+$('imsHealth').addEventListener('click', async e => {
+  e.target.disabled = true;
+  $('imsOut').textContent = 'GET ' + IMS_HEALTH_URL + ' …';
+  const res = await send(IMS_HEALTH_URL, '', null, 'GET');
+  const up = res.ok && res.httpStatus >= 200 && res.httpStatus < 300 && /responding/i.test(res.text || '');
+  $('imsOut').textContent = (up ? 'UP — the local Fiscal Component is responding.' :
+    'NOT RESPONDING. Check services.msc for the FBR fiscalization service, and that this page and fbr-proxy.js run on the same PC as the component.') +
+    '\n\n' + (res.ok ? 'HTTP ' + res.httpStatus + '\n' + (res.text || '') : res.error);
+  e.target.disabled = false;
+});
+/* Posts an empty body {} to both cloud hosts. The gateway's answer says whether the token opens each one;
+ * IMS rejects {} as invalid data (Code 102), so nothing is ever filed. */
+$('imsWhich').addEventListener('click', async e => {
+  const token = $('imsToken').value.trim();
+  if (!token) { $('imsOut').textContent = 'Paste the token first.'; return; }
+  e.target.disabled = true;
+  $('imsOut').textContent = 'Checking the token against the IMS sandbox and production hosts (empty body — nothing is filed) …';
+  const lines = [], opens = {};
+  for (const env of ['sb', 'prod']) {
+    const res = await send(IMS_URLS[env], token, {});
+    const gw = gatewayFault(res);
+    opens[env] = res.ok && !gw && res.httpStatus < 500;
+    lines.push((env === 'sb' ? 'Sandbox    ' : 'Production ') + (opens[env] ? 'OPENS  ' : 'blocked') + '  ' +
+      (res.ok ? (gw || ('HTTP ' + res.httpStatus + ' ' + (res.text || '').slice(0, 160))) : res.error));
+  }
+  const verdict =
+    opens.sb && opens.prod ? 'This token opens both hosts.' :
+    opens.sb   ? 'SANDBOX token — use it with Cloud Sandbox and your test POS ID.' :
+    opens.prod ? 'PRODUCTION token. Every valid bill sent with it is a real fiscal invoice. For testing, get the token that comes with your TEST POS ID (Generate Test POS in IRIS), or ask the FBR helpline for the IMS sandbox token.' :
+                 'Opens neither IMS host — it is a DI / POS DI token, or invalid. Get the token issued for your IMS POS registration.';
+  $('imsOut').textContent = verdict + '\n\n' + lines.join('\n');
+  e.target.disabled = false;
+});
+$('imsRun').addEventListener('click', async e => {
+  const p = parseBody('imsBody','imsOut'); if (!p) return;
+  const warn = imsLint(p);
+  if (warn.length && !confirm('This payload has problems FBR is likely to reject:\n\n- ' + warn.join('\n- ') + '\n\nSend it anyway?')) {
+    $('imsOut').textContent = 'Not sent. Fix these first:\n- ' + warn.join('\n- ');
+    return;
+  }
+  if ($('imsEnv').value === 'prod' &&
+      !confirm('This is the PRODUCTION endpoint. IMS has no dry run — this files a real fiscal invoice with FBR. Continue?')) return;
+  e.target.disabled = true;
+  await runIms($('imsScenario').value, p);
+  e.target.disabled = false;
+});
+$('imsRunAll').addEventListener('click', async e => {
+  if ($('imsEnv').value === 'prod') { alert('Run ALL is disabled on production. Send production bills one at a time.'); return; }
+  if (!confirm('This sends all ' + IMS_SCENARIOS.length + ' scenarios — each creates a fiscal invoice in this environment. Continue?')) return;
+  e.target.disabled = true; $('imsRun').disabled = true;
+  imsRows.length = 0; renderImsRows();
+  // Scenarios run in file order, so IMS-H01 is accepted before IMS-H05 refunds it.
+  for (const s of IMS_SCENARIOS) {
+    $('imsScenario').value = s.id; describeImsScenario();
+    const p = imsPayload(s.id);
+    $('imsBody').value = JSON.stringify(p, null, 2);
+    const v = await runIms(s.id, p);
+    if (v === null) break;
+  }
+  const passed = imsRows.filter(r => r.pass).length;
+  $('imsOut').textContent = 'Finished. ' + passed + ' / ' + imsRows.length + ' passed. See the results table below.';
+  e.target.disabled = false; $('imsRun').disabled = false;
+});
+$('imsExport').addEventListener('click', () => {
+  const q = v => '"' + String(v == null ? '' : v).replace(/"/g,'""') + '"';
+  const csv = ['Scenario,Verdict,USIN,FiscalInvoiceNumber,Detail']
+    .concat(imsRows.map(r => [r.id, r.pass?'PASS':'FAIL', q(r.usin), q(r.invoice), q(r.detail)].join(',')))
+    .join('\n');
+  download('fbr-ims-results-' + TODAY + '.csv', csv, 'text/csv');
+});
+
+/* ------------------------------------------------------------------ *
  * Docs: per-view table of contents built from the h2s
  * ------------------------------------------------------------------ */
 const slug = t => t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
@@ -2340,15 +3243,16 @@ function watchHeadings(){
 /* ------------------------------------------------------------------ *
  * View routing
  * ------------------------------------------------------------------ */
-const VIEWS = ['overview','di-guide','pos-guide','scenarios','di-test','pos-test'];
+const VIEWS = ['overview','di-guide','pos-guide','ims-guide','scenarios','di-test','pos-test','ims-test'];
+const TESTERS = ['di-test','pos-test','ims-test'];
 
 function show(view, keepScroll){
   if (VIEWS.indexOf(view) === -1) view = 'overview';
   VIEWS.forEach(v => $('view-' + v).classList.toggle('on', v === view));
   document.querySelectorAll('nav.main button').forEach(b =>
     b.classList.toggle('on', b.dataset.view === view));
-  // The connection panel is shared by both testers.
-  $('connection').classList.toggle('hide', view !== 'di-test' && view !== 'pos-test');
+  // The connection panel is shared by all testers.
+  $('connection').classList.toggle('hide', TESTERS.indexOf(view) === -1);
   if (!keepScroll) window.scrollTo(0, 0);
   try { history.replaceState(null, '', '#' + view); } catch(e){}
 }
@@ -2374,11 +3278,14 @@ document.querySelectorAll('input,select').forEach(el => el.addEventListener('cha
 
 fillScenarios();
 fillPosSamples();
+fillImsScenarios();
 loadState();
 if (!$('diUrl').value) syncDiUrl();
 if (!$('posUrl').value) syncPosUrl();
+{ const u = $('imsUrl').value; syncImsUrl(); if (u) $('imsUrl').value = u; }
 loadScenario();
 loadPosSample();
+loadImsScenario();
 buildTocs();
 watchHeadings();
 

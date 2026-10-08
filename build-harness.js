@@ -7,8 +7,10 @@
  *   README.md                                    -> the Overview view
  *   fbr-digital-invoice-developer-guide.md       -> the DI Guide view
  *   fbr-pos-digital-invoice-developer-guide.md   -> the POS Guide view
+ *   fbr-ims-fiscal-component-developer-guide.md  -> the IMS Guide view
  *   fbr-di-sandbox-scenarios.md                  -> the Scenarios view
  *   fbr-di-sandbox-scenarios.json                -> the 28 payloads the DI tester runs
+ *   fbr-ims-test-scenarios.json                  -> the payloads the IMS tester runs
  *   fbr-proxy.js                                 -> embedded verbatim so the single HTML
  *                                                   file can recreate the relay it needs
  *
@@ -177,6 +179,7 @@ const VIEW_OF = {
   'README.md': 'overview',
   'fbr-digital-invoice-developer-guide.md': 'di-guide',
   'fbr-pos-digital-invoice-developer-guide.md': 'pos-guide',
+  'fbr-ims-fiscal-component-developer-guide.md': 'ims-guide',
   'fbr-di-sandbox-scenarios.md': 'scenarios',
   'fbr-test-harness.html': 'di-test',
 };
@@ -195,10 +198,12 @@ const doc = f => linkifyRefs(mdToHtml(read(f)));
 
 const html = read('harness.template.html')
   .replace('__SCENARIOS__', () => read('fbr-di-sandbox-scenarios.json').trim())
+  .replace('__IMS_SCENARIOS__', () => read('fbr-ims-test-scenarios.json').trim())
   .replace('__PROXY_SOURCE__', () => escHtml(read('fbr-proxy.js')))
   .replace('__DOC_OVERVIEW__', () => doc('README.md'))
   .replace('__DOC_DI__', () => doc('fbr-digital-invoice-developer-guide.md'))
   .replace('__DOC_POS__', () => doc('fbr-pos-digital-invoice-developer-guide.md'))
+  .replace('__DOC_IMS__', () => doc('fbr-ims-fiscal-component-developer-guide.md'))
   .replace('__DOC_SCENARIOS__', () => doc('fbr-di-sandbox-scenarios.md'))
   .replace('__BUILT_ON__', () => new Date().toISOString().slice(0, 10));
 
