@@ -728,6 +728,12 @@ function pick(obj, name){
   return k === undefined ? undefined : obj[k];
 }
 
+/* IMS reply codes seen in the field (IMS guide §9.2). */
+const IMS_CODE_HINTS = {
+  '102': 'the payload was rejected — check field names, types and totals.',
+  '112': 'FBR has refused cloud posting for this registration. Check POS type = Cloud Based with the server\'s public IP, ask FBR which live method is supported, or use the local Fiscal Component.'
+};
+
 /** IMS: HTTP 2xx AND body Code "100" AND a non-empty InvoiceNumber / FBRInvoiceNumber (IMS guide §9.2). */
 function imsVerdict(res){
   if (!res.ok) return { pass:false, detail:res.error, invoice:'' };
@@ -744,7 +750,8 @@ function imsVerdict(res){
   const errs = pick(j, 'Errors');
   const errText = errs ? (typeof errs === 'string' ? errs : JSON.stringify(errs)) : '';
   if (code !== '100')
-    return { pass:false, detail:'Code ' + (code || '(none)') + ' — ' + (msg || 'rejected with no message') + (errText ? ' | ' + errText : ''), invoice:'' };
+    return { pass:false, detail:'Code ' + (code || '(none)') + ' — ' + (msg || 'rejected with no message') + (errText ? ' | ' + errText : '') +
+      (IMS_CODE_HINTS[code] ? '  → ' + IMS_CODE_HINTS[code] : ''), invoice:'' };
   if (!String(inv).trim())
     return { pass:false, detail:'Code 100 but no invoice number returned — do not treat this bill as fiscalized.', invoice:'' };
   return { pass:true, detail: msg || 'Fiscalized.', invoice:String(inv) };

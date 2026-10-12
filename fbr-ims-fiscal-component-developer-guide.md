@@ -14,7 +14,8 @@ TIER 1 Retailer with FBR* (the "FBR Technical Assistant" PDF in this folder).
 ## 1. What IMS is
 
 IMS is FBR's **invoice fiscalization** system. Every bill your POS prints is sent to FBR. FBR returns
-a **Fiscal Invoice Number** (19–30 digits, e.g. `9000052011142444901`). You print that number and a
+a **Fiscal Invoice Number**. It is a string, not always digits: the spec shows `9000052011142444901`,
+and the sandbox returns forms like `822922FJFP4376138*test*`. Store it as text. You print that number and a
 QR code on the customer's receipt.
 
 There are two ways to connect, and the payload is identical in both:
@@ -366,6 +367,7 @@ and build your own table as you go. Codes observed so far:
 |---|---|---|
 | `100` | Fiscal Invoice Number generated successfully / Invoice received successfully | Accepted |
 | `102` | Invalid data received | Payload rejected. `InvoiceNumber` comes back as `"Not Available"`, so never treat a non-empty `InvoiceNumber` alone as success |
+| `112` | Bulk data upload functionality is no more available | Seen on the **production** cloud URL (`gw.fbr.gov.pk/imsp/.../Live/PostData`) in October 2026, with a valid live token, a valid live POSID and a correct current bill. The same bill succeeded in sandbox, and a backdated bill also succeeded there, so the date is not the cause. FBR refuses cloud posting for that live POS. Check that POS type is **Cloud Based** and that the POS's IP is the sender's public IP; otherwise FBR must enable it, or use the local Fiscal Component (§5), which does not use this endpoint |
 
 ---
 

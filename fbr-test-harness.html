@@ -126,7 +126,7 @@
   <button data-view="di-test">DI Tester</button>
   <button data-view="pos-test">POS Tester</button>
   <button data-view="ims-test">IMS Tester</button>
-  <span class="stamp">built 2026-10-08</span>
+  <span class="stamp">built 2026-10-12</span>
 </nav>
 
 <div class="wrap">
@@ -511,7 +511,7 @@ totalValues = taxableValue + salesTaxApplicable + extraTax + furtherTax − stWi
 <p><strong>Audience:</strong> a developer integrating a point-of-sale or billing system with FBR's <strong>IMS Software Fiscal Component</strong>: Tier-1 retailers under the Sales Tax Rules, and businesses notified for <strong>income-tax POS integration</strong> (hospitals, clinics, labs, restaurants, hotels, …). <strong>Scope:</strong> POS registration → test POS ID → sandbox posting → production → receipt printing. <strong>Companion files:</strong> <a class="xref" data-view="di-test" href="#di-test"><code>fbr-test-harness.html</code></a> (IMS Tester tab), <code>fbr-ims-test-scenarios.json</code> (ready-made payloads), <code>fbr-proxy.js</code> (CORS relay). <strong>Source spec:</strong> FBR <em>Technical Specification for Data Sharing through Software Fiscal Component from TIER 1 Retailer with FBR</em> (the "FBR Technical Assistant" PDF in this folder).</p>
 <hr />
 <h2>1. What IMS is</h2>
-<p>IMS is FBR's <strong>invoice fiscalization</strong> system. Every bill your POS prints is sent to FBR. FBR returns a <strong>Fiscal Invoice Number</strong> (19–30 digits, e.g. <code>9000052011142444901</code>). You print that number and a QR code on the customer's receipt.</p>
+<p>IMS is FBR's <strong>invoice fiscalization</strong> system. Every bill your POS prints is sent to FBR. FBR returns a <strong>Fiscal Invoice Number</strong>. It is a string, not always digits: the spec shows <code>9000052011142444901</code>, and the sandbox returns forms like <code>822922FJFP4376138*test*</code>. Store it as text. You print that number and a QR code on the customer's receipt.</p>
 <p>There are two ways to connect, and the payload is identical in both:</p>
 <div class="tablewrap"><table><thead><tr><th></th><th><strong>Cloud (direct API)</strong></th><th><strong>Local Fiscal Component</strong></th></tr></thead><tbody><tr><td>How</td><td>Your server POSTs to FBR's API over HTTPS</td><td>A Windows service FBR provides runs on the POS PC; your POS POSTs to it on <code>localhost</code>, and it uploads to FBR in the background</td></tr><tr><td>Auth</td><td><code>Authorization: Bearer &lt;token&gt;</code></td><td>None on localhost. The <strong>Access Code</strong> is entered once in the installer</td></tr><tr><td>Fits</td><td>Web/cloud billing systems, multi-branch HMS/ERP</td><td>Desktop POS on Windows PCs at each counter</td></tr><tr><td>POS type in registration</td><td><strong>Cloud Based</strong></td><td><strong>Client Server</strong></td></tr><tr><td>Internet at sale time</td><td>Required</td><td>Not required (the component queues and syncs)</td></tr></tbody></table></div>
 <p>Pick one per POS ID. A web-based hospital system almost always wants <strong>Cloud</strong>.</p>
@@ -635,7 +635,7 @@ FurtherTax      = Σ FurtherTax       TotalBillAmount = Σ TotalAmount</code></p
 <ul><li>a DI or POS DI token used against the IMS URL;</li><li>a <strong>production</strong> IMS token used against the IMS <strong>sandbox</strong> URL. The production token is accepted only on <code>gw.fbr.gov.pk/imsp/...</code>; testing needs the token that goes with the <strong>test POS ID</strong>.</li></ul>
 <p>To find out which API a token belongs to without filing anything, use <strong>Check token</strong> in the IMS Tester, or POST an empty body <code>{}</code> yourself. A <code>900908</code> means "not this API"; an IMS reply such as <code>Code "102"</code> means the token opens it.</p>
 <p>The spec does not publish a list of rejection codes. Log every non-100 code you see in the sandbox and build your own table as you go. Codes observed so far:</p>
-<div class="tablewrap"><table><thead><tr><th><code>Code</code></th><th><code>Response</code></th><th>Meaning</th></tr></thead><tbody><tr><td><code>100</code></td><td>Fiscal Invoice Number generated successfully / Invoice received successfully</td><td>Accepted</td></tr><tr><td><code>102</code></td><td>Invalid data received</td><td>Payload rejected. <code>InvoiceNumber</code> comes back as <code>"Not Available"</code>, so never treat a non-empty <code>InvoiceNumber</code> alone as success</td></tr></tbody></table></div>
+<div class="tablewrap"><table><thead><tr><th><code>Code</code></th><th><code>Response</code></th><th>Meaning</th></tr></thead><tbody><tr><td><code>100</code></td><td>Fiscal Invoice Number generated successfully / Invoice received successfully</td><td>Accepted</td></tr><tr><td><code>102</code></td><td>Invalid data received</td><td>Payload rejected. <code>InvoiceNumber</code> comes back as <code>"Not Available"</code>, so never treat a non-empty <code>InvoiceNumber</code> alone as success</td></tr><tr><td><code>112</code></td><td>Bulk data upload functionality is no more available</td><td>Seen on the <strong>production</strong> cloud URL (<code>gw.fbr.gov.pk/imsp/.../Live/PostData</code>) in October 2026, with a valid live token, a valid live POSID and a correct current bill. The same bill succeeded in sandbox, and a backdated bill also succeeded there, so the date is not the cause. FBR refuses cloud posting for that live POS. Check that POS type is <strong>Cloud Based</strong> and that the POS's IP is the sender's public IP; otherwise FBR must enable it, or use the local Fiscal Component (§5), which does not use this endpoint</td></tr></tbody></table></div>
 <hr />
 <h2>10. Posting flow inside your application</h2>
 <pre class="code"><code>Cashier saves the bill
@@ -2773,6 +2773,12 @@ function pick(obj, name){
   return k === undefined ? undefined : obj[k];
 }
 
+/* IMS reply codes seen in the field (IMS guide §9.2). */
+const IMS_CODE_HINTS = {
+  '102': 'the payload was rejected — check field names, types and totals.',
+  '112': 'FBR has refused cloud posting for this registration. Check POS type = Cloud Based with the server\'s public IP, ask FBR which live method is supported, or use the local Fiscal Component.'
+};
+
 /** IMS: HTTP 2xx AND body Code "100" AND a non-empty InvoiceNumber / FBRInvoiceNumber (IMS guide §9.2). */
 function imsVerdict(res){
   if (!res.ok) return { pass:false, detail:res.error, invoice:'' };
@@ -2789,7 +2795,8 @@ function imsVerdict(res){
   const errs = pick(j, 'Errors');
   const errText = errs ? (typeof errs === 'string' ? errs : JSON.stringify(errs)) : '';
   if (code !== '100')
-    return { pass:false, detail:'Code ' + (code || '(none)') + ' — ' + (msg || 'rejected with no message') + (errText ? ' | ' + errText : ''), invoice:'' };
+    return { pass:false, detail:'Code ' + (code || '(none)') + ' — ' + (msg || 'rejected with no message') + (errText ? ' | ' + errText : '') +
+      (IMS_CODE_HINTS[code] ? '  → ' + IMS_CODE_HINTS[code] : ''), invoice:'' };
   if (!String(inv).trim())
     return { pass:false, detail:'Code 100 but no invoice number returned — do not treat this bill as fiscalized.', invoice:'' };
   return { pass:true, detail: msg || 'Fiscalized.', invoice:String(inv) };
